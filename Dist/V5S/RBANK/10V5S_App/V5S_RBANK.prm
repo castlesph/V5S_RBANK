@@ -1,0 +1,22 @@
+V5S_NETS
+0001
+1=TERMINAL\MMT\szMID\MMTid\32=111350390000;NETS Merchant 1 MID
+0=TERMINAL\CPT\szPriTxnHostIP\CPTid\2=192.168.2.105;Debit Host Primary Trx Host IP
+0=TERMINAL\CPT\szSecTxnHostIP\CPTid\2=192.168.2.105;Debit Secondary Trx Host IP
+0=TERMINAL\CPT\szPriSettlementHostIP\CPTid\2=192.168.2.105;Debit Primary settlement host IP
+0=TERMINAL\CPT\szSecSettlementHostIP\CPTid\2=192.168.2.105;Debit Secondary settlement host IP
+0=TERMINAL\CPT\inPriTxnHostPortNum\CPTid\2=5010;Debit Primary txn port number
+0=TERMINAL\CPT\inSecTxnHostPortNum\CPTid\2=5010;Debit Secondary txn port number
+0=TERMINAL\CPT\inPriSettlementHostPort\CPTid\2=5010;Debit Primary Settlement port number
+0=TERMINAL\CPT\inSecSettlementHostPort\CPTid\2=5010;Debit Secondary Settlement port number
+0=TERMINAL\CPT\inCommunicationMode\CPTid\2=1;0 is dial, 1 is LAN, 2 is GPRS
+0=TERMINAL\TCP\fDHCPEnable=1;TERMINAL IP TYPE STATIC(0)/DYNAMIC(1)
+0=TERMINAL\TCP\szTerminalIP=0.0.0.0;Terminal IP address
+0=TERMINAL\TCP\szGetWay=0.0.0.0;Terminal Gateway
+0=TERMINAL\TCP\szSubNetMask=255.255.255.0;Terminal Subnet Mask
+0=TERMINAL\TCP\szHostDNS1=0.0.vdCTOS_FunctionKey.0;Primary DNS
+0=TERMINAL\TCP\szHostDNS2=0.0.0.0;Secondary DNSs
+0=TERMINAL\TCT\byTerminalType=3;1 for V5S Text Menu, 2 for V5S ICON MENU, 3 for V3 Text Menu, 4 for V3 ICON Menu, 5 for MP200 Text Menu, 6 for MP200 ICON MENU, 7 for UPT1000 Text Menu, 8 for UPT1000 ICON MENU, 9 Text Menu V3UL, 10 for V3UL ICON MENU
+0=TERMINAL\TCT\byRS232DebugPort=8;Debug
+0=TERMINAL\TCT\inMenuid=1;menu id
+0=ENV\CFG\szValue\szTag\BANCNET_TESTKEY=1;Hardcode TMK for Debit

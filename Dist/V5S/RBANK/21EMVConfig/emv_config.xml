@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+<configurationDescriptor version="01">
+  <Config index="01" active="true">
+    <CAPKConfig>
+      <Group RID="A000000004">
+        <Item index="05">
+          <modules>B8048ABC30C90D976336543E3FD7091C8FE4800DF820ED55E7E94813ED00555B573FECA3D84AF6131A651D66CFF4284FB13B635EDD0EE40176D8BF04B7FD1C7BACF9AC7327DFAA8AA72D10DB3B8E70B2DDD811CB4196525EA386ACC33C0D9D4575916469C4E4F53E8E1C912CC618CB22DDE7C3568E90022E6BBA770202E4522A2DD623D180E215BD1D1507FE3DC90CA310D27B3EFCCD8F83DE3052CAD1E48938C68D095AAC91B5F37E28BB49EC7ED597</modules>
+          <exponent>03</exponent>
+          <expirydata/>
+          <hash>EBFA0D5D06D8CE702DA3EAE890701D45E274C845</hash>
+        </Item>
+        <Item index="06">
+          <modules>CB26FC830B43785B2BCE37C81ED334622F9622F4C89AAE641046B2353433883F307FB7C974162DA72F7A4EC75D9D657336865B8D3023D3D645667625C9A07A6B7A137CF0C64198AE38FC238006FB2603F41F4F3BB9DA1347270F2F5D8C606E420958C5F7D50A71DE30142F70DE468889B5E3A08695B938A50FC980393A9CBCE44AD2D64F630BB33AD3F5F5FD495D31F37818C1D94071342E07F1BEC2194F6035BA5DED3936500EB82DFDA6E8AFB655B1EF3D0D7EBF86B66DD9F29F6B1D324FE8B26CE38AB2013DD13F611E7A594D675C4432350EA244CC34F3873CBA06592987A1D7E852ADC22EF5A2EE28132031E48F74037E3B34AB747F</modules>
+          <exponent>03</exponent>
+          <expirydata/>
+          <hash>F910A1504D5FFB793D94F3B500765E1ABCAD72D9</hash>
+        </Item>
+      </Group>
+      <Group RID="A000000003">
+        <Item index="08">
+          <modules>D9FD6ED75D51D0E30664BD157023EAA1FFA871E4DA65672B863D255E81E137A51DE4F72BCC9E44ACE12127F87E263D3AF9DD9CF35CA4A7B01E907000BA85D24954C2FCA3074825DDD4C0C8F186CB020F683E02F2DEAD3969133F06F7845166ACEB57CA0FC2603445469811D293BFEFBAFAB57631B3DD91E796BF850A25012F1AE38F05AA5C4D6D03B1DC2E568612785938BBC9B3CD3A910C1DA55A5A9218ACE0F7A21287752682F15832A678D6E1ED0B</modules>
+          <exponent>03</exponent>
+          <expirydata/>
+          <hash>20D213126955DE205ADC2FD2822BD22DE21CF9A8</hash>
+        </Item>
+        <Item index="09">
+          <modules>9D912248DE0A4E39C1A7DDE3F6D2588992C1A4095AFBD1824D1BA74847F2BC4926D2EFD904B4B54954CD189A54C5D1179654F8F9B0D2AB5F0357EB642FEDA95D3912C6576945FAB897E7062CAA44A4AA06B8FE6E3DBA18AF6AE3738E30429EE9BE03427C9D64F695FA8CAB4BFE376853EA34AD1D76BFCAD15908C077FFE6DC5521ECEF5D278A96E26F57359FFAEDA19434B937F1AD999DC5C41EB11935B44C18100E857F431A4A5A6BB65114F174C2D7B59FDF237D6BB1DD0916E644D709DED56481477C75D95CDD68254615F7740EC07F330AC5D67BCD75BF23D28A140826C026DBDE971A37CD3EF9B8DF644AC385010501EFC6509D7A41</modules>
+          <exponent>03</exponent>
+          <expirydata/>
+          <hash>1FF80A40173F52D7D27E0F26A146A1C8CCB29046</hash>
+        </Item>
+      </Group>	  	  
+    </CAPKConfig>
+    <AppList>
+      <Item index="01">
+        <Name>VISA</Name>
+        <AID>A000000003</AID>
+        <ASI>00</ASI>
+      </Item>
+      <Item index="02">
+        <Name>MasterCard</Name>
+        <AID>A000000004</AID>
+        <ASI>00</ASI>
+      </Item>
+      <Item index="03">
+        <Name>JCB</Name>
+        <AID>A000000065</AID>
+        <ASI>00</ASI>
+      </Item>
+      <Item index="04">
+        <Name>AMEX</Name>
+        <AID>A000000099</AID>
+        <ASI>00</ASI>
+      </Item>
+	  <Item index="05">
+        <Name>SMARTACCOUNT</Name>
+        <AID>E0000041110010</AID>
+        <ASI>00</ASI>
+      </Item>
+    </AppList>
+    <TerminalConfig>
+      <Item name="TERMINAL CAPABILITIES" tag="9F33" attribute="hex">E0B0C8</Item>
+      <Item name="TERMINAL TYPE" tag="9F35" attribute="hex">22</Item>
+      <Item name="ADDITIONAL TERMINAL CAPABILITIES" tag="9F40" attribute="hex">E000F0F001</Item>
+      <Item name="INTERFACE DEVICE (IFD) SERIAL NUMBER" tag="9F1E" attribute="asc">12345678</Item>
+      <Item name="TRANSACTION CURRENCY CODE" tag="5F2A" attribute="hex">0608</Item>
+      <Item name="TERMINAL COUNTRY CODE" tag="9F1A" attribute="hex">0608</Item>
+      <Item name="Default TDOL" tag="DFC0" attribute="hex">9F02065F2A029A039C0195059F3704</Item>
+      <Item name="Default DDOL" tag="DFC1" attribute="hex">9F3704</Item>
+      <Item name="App Version" tag="9F09" attribute="hex">0084</Item>
+      <Item name="Termian Floor Limit" tag="9F1B" attribute="hex">000003E8</Item>
+      <Item name="Threshold Value" tag="DFC4" attribute="hex">00000000</Item>
+      <Item name="Target Percent" tag="DFC2" attribute="hex">00</Item>
+      <Item name="Max Target Percent" tag="DFC3" attribute="hex">00</Item>
+      <Item name="TAC Denial" tag="DFC6" attribute="hex">0000000000</Item>
+      <Item name="TAC Online" tag="DFC7" attribute="hex">0000000000</Item>
+      <Item name="TAC Default" tag="DFC8" attribute="hex">0000000000</Item>
+    </TerminalConfig>
+    <AppConfig>
+      <Group name="VISA" AID="A0000000031010" ASI="00">
+        <Item name="App Version" tag="9F09" attribute="hex">008C</Item>
+        <Item name="Termian Floor Limit" tag="9F1B" attribute="hex">00002710</Item>
+        <Item name="Threshold Value" tag="DFC4" attribute="hex">00000000</Item>
+        <Item name="Target Percent" tag="DFC2" attribute="hex">00</Item>
+        <Item name="Max Target Percent" tag="DFC3" attribute="hex">00</Item>
+        <Item name="TAC Denial" tag="DFC6" attribute="hex">0010000000</Item>
+        <Item name="TAC Online" tag="DFC7" attribute="hex">DC4004F800</Item>
+        <Item name="TAC Default" tag="DFC8" attribute="hex">DC4000A800</Item>
+      </Group>
+      <Group name="MasterCard" AID="A0000000041010" ASI="00">
+        <Item name="App Version" tag="9F09" attribute="hex">0002</Item>
+        <Item name="Termian Floor Limit" tag="9F1B" attribute="hex">000003E8</Item>
+        <Item name="Threshold Value" tag="DFC4" attribute="hex">00000000</Item>
+        <Item name="Target Percent" tag="DFC2" attribute="hex">00</Item>
+        <Item name="Max Target Percent" tag="DFC3" attribute="hex">00</Item>
+        <Item name="TAC Denial" tag="DFC6" attribute="hex">0000000000</Item>
+        <Item name="TAC Online" tag="DFC7" attribute="hex">FC508C8800</Item>
+        <Item name="TAC Default" tag="DFC8" attribute="hex">FC508C8800</Item>
+        <Item name="TAC Default" tag="DFC9" attribute="hex">FC508C0000</Item>
+      </Group>
+    </AppConfig>
+  </Config>
+  <Config index="02" active="false">
+    <CAPKConfig>
+      <Group RID="A000009999">
+        <Item index="E1">
+          <modules>99C5B70AA61B4F4C51B6F90B0E3BFB7A3EE0E7DB41BC466888B3EC8E9977C762407EF1D79E0AFB2823100A020C3E8020593DB50E90DBEAC18B78D13F96BB2F57EEDDC30F256592417CDF739CA6804A10A29D2806E774BFA751F22CF3B65B38F37F91B4DAF8AEC9B803F7610E06AC9E6B</modules>
+          <exponent>03</exponent>
+          <expirydata/>
+          <hash>DD92063B14603A07189B998BE66BC0A42749C6C2</hash>
+        </Item>
+      </Group>
+      <Group RID="A000000004">
+        <Item index="51">
+          <modules>DB5FA29D1FDA8C1634B04DCCFF148ABEE63C772035C79851D3512107586E02A917F7C7E885E7C4A7D529710A145334CE67DC412CB1597B77AA2543B98D19CF2CB80C522BDBEA0F1B113FA2C86216C8C610A2D58F29CF3355CEB1BD3EF410D1EDD1F7AE0F16897979DE28C6EF293E0A19282BD1D793F1331523FC71A228800468C01A3653D14C6B4851A5C029478E757F</modules>
+          <exponent>03</exponent>
+          <expirydata/>
+          <hash>AF08EFF20DA86FDA1259519B592372A9E0A71E2B</hash>
+        </Item>
+      </Group>
+      <Group RID="A000000003">
+        <Item index="51">
+          <modules>DB5FA29D1FDA8C1634B04DCCFF148ABEE63C772035C79851D3512107586E02A917F7C7E885E7C4A7D529710A145334CE67DC412CB1597B77AA2543B98D19CF2CB80C522BDBEA0F1B113FA2C86216C8C610A2D58F29CF3355CEB1BD3EF410D1EDD1F7AE0F16897979DE28C6EF293E0A19282BD1D793F1331523FC71A228800468C01A3653D14C6B4851A5C029478E757F</modules>
+          <exponent>03</exponent>
+          <expirydata/>
+          <hash>AF08EFF20DA86FDA1259519B592372A9E0A71E2B</hash>
+        </Item>
+    </Group>
+    </CAPKConfig>
+    <AppConfig>
+      <Group name="VISA" AID="A0000000031010" ASI="00">
+        <Item name="App Version" tag="9F09" attribute="bcd">008C</Item>
+        <Item name="Termian Floor Limit" tag="9F1B" attribute="bcd">00002710</Item>
+        <Item name="Threshold Value" tag="DFC4" attribute="bcd">00000000</Item>
+        <Item name="Target Percent" tag="DFC2" attribute="bcd">00</Item>
+        <Item name="Max Target Percent" tag="DFC3" attribute="bcd">00</Item>
+        <Item name="TAC Denial" tag="DFC6" attribute="bcd">0010000000</Item>
+        <Item name="TAC Online" tag="DFC7" attribute="bcd">DC4004F800</Item>
+        <Item name="TAC Default" tag="DFC8" attribute="bcd">DC4000A800</Item>
+      </Group>
+      <Group name="MasterCard" AID="A0000000041010" ASI="00">
+        <Item name="App Version" tag="9F09" attribute="bcd">0002</Item>
+        <Item name="Termian Floor Limit" tag="9F1B" attribute="bcd">000003E8</Item>
+        <Item name="Threshold Value" tag="DFC4" attribute="bcd">00000000</Item>
+        <Item name="Target Percent" tag="DFC2" attribute="bcd">00</Item>
+        <Item name="Max Target Percent" tag="DFC3" attribute="bcd">00</Item>
+        <Item name="TAC Denial" tag="DFC6" attribute="bcd">0000000000</Item>
+        <Item name="TAC Online" tag="DFC7" attribute="bcd">FC508C8800</Item>
+        <Item name="TAC Default" tag="DFC8" attribute="bcd">FC508C8800</Item>
+      </Group>
+    </AppConfig>
+    <TerminalConfig>
+      <Item name="TERMINAL CAPABILITIES" tag="9F33" attribute="bcd">E0B0C8</Item>
+      <Item name="TERMINAL TYPE" tag="9F35" attribute="bcd">22</Item>
+      <Item name="ADDITIONAL TERMINAL CAPABILITIES" tag="9F40" attribute="bcd">E000F0F001</Item>
+      <Item name="INTERFACE DEVICE (IFD) SERIAL NUMBER" tag="9F1E" attribute="asc">12345678</Item>
+      <Item name="TRANSACTION CURRENCY CODE" tag="5F2A" attribute="bcd">0608</Item>
+      <Item name="TERMINAL COUNTRY CODE" tag="9F1A" attribute="bcd">0608</Item>
+      <Item name="Default TDOL" tag="DFC0" attribute="bcd">9F02065F2A029A039C0195059F3704</Item>
+      <Item name="Default DDOL" tag="DFC1" attribute="bcd">9F3704</Item>
+      <Item name="App Version" tag="9F09" attribute="bcd">0084</Item>
+      <Item name="Termian Floor Limit" tag="9F1B" attribute="bcd">000003E8</Item>
+      <Item name="Threshold Value" tag="DFC4" attribute="bcd">00000000</Item>
+      <Item name="Target Percent" tag="DFC2" attribute="bcd">00</Item>
+      <Item name="Max Target Percent" tag="DFC3" attribute="bcd">00</Item>
+      <Item name="TAC Denial" tag="DFC6" attribute="bcd">0000000000</Item>
+      <Item name="TAC Online" tag="DFC7" attribute="bcd">0000000000</Item>
+      <Item name="TAC Default" tag="DFC8" attribute="bcd">0000000000</Item>
+    </TerminalConfig>
+  </Config>
+</configurationDescriptor>
