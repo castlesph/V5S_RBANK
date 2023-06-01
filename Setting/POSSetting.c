@@ -191,6 +191,7 @@ int inCTOS_SelectHostSetting(void)
 		vdDebug_LogPrintf("strHDT.szAPName = %s", strHDT.szAPName);
     }
     
+	vdDebug_LogPrintf("hostid %d", inCPTID[key-1]);
     return inCPTID[key-1];
 }
 
@@ -1771,109 +1772,85 @@ void vdCTOS_ModifyEdcSetting(void)
 	return d_OK;
 }
 
-int vdCTOS_DeleteBatch(void)
+void vdCTOS_DeleteBatch(void)
 {
-    int         shHostIndex = 1;
-    int         inResult,inRet;
-    ACCUM_REC srAccumRec;
-    STRUCT_FILE_SETTING strFile;
+	int 		shHostIndex = 1;
+	int 		inResult,inRet;
+	ACCUM_REC srAccumRec;
+	STRUCT_FILE_SETTING strFile;
 
-    
-    vduiLightOn();                
+	
+	vduiLightOn();				  
+	vdDebug_LogPrintf("vdCTOS_DeleteBatch");	
 
-	inRet = inCTOS_TEMPCheckAndSelectMutipleMID();
-	if(d_OK != inRet)
-		return inRet;
+	shHostIndex = inCTOS_SelectHostSetting();
+	if (shHostIndex == -1)
+		return;
 
-    shHostIndex = inCTOS_SelectHostSetting();
-    if (shHostIndex == -1)
-        return;
+	if (inMultiAP_CheckMainAPStatus() == d_OK)
+	{
+		inRet = inCTOS_MultiAPSaveData(d_IPC_CMD_DELETE_BATCH);
+		if(d_OK != inRet)
+			return ;
+	}
+	else
+	{
+		if (inMultiAP_CheckSubAPStatus() == d_OK)
+		{
+			inRet = inCTOS_MultiAPGetData();
+			if(d_OK != inRet)
+				return ;
 
-    if (inMultiAP_CheckMainAPStatus() == d_OK)
-    {
-        inRet = inCTOS_MultiAPSaveData(d_IPC_CMD_DELETE_BATCH);
-        if(d_OK != inRet)
-            return ;
-    }
-    else
-    {
-        if (inMultiAP_CheckSubAPStatus() == d_OK)
-        {
-            inRet = inCTOS_MultiAPGetData();
-            if(d_OK != inRet)
-                return ;
+			inRet = inCTOS_MultiAPReloadHost();
+			if(d_OK != inRet)
+				return ;
+		}
+	}
 
-            inRet = inCTOS_MultiAPReloadHost();
-            if(d_OK != inRet)
-                return ;
-        }
-    }
+	inResult = inCTOS_CheckAndSelectMutipleMID();
+	if(d_OK != inResult)
+		return;
+			
+	inResult = vduiAskConfirmContinue(1);
+	if(inResult == d_OK)
+	{
 
-	//remove prompt fro selection-Merchant selection is done by inCTOS_TEMPCheckAndSelectMutipleMID
-	//	  inRet = inCTOS_CheckAndSelectMutipleMID();
-	//	  if(d_OK != inRet)
-	//		  return inRet;
-	inMMTReadRecord(srTransRec.HDTid,srTransRec.MITid);
-            
-    inResult = vduiAskConfirmContinue(1);
-    if(inResult == d_OK)
-    {
+		if(CN_TRUE == strMMT[0].fMustSettFlag)
+		{
+			strMMT[0].fMustSettFlag = CN_FALSE;
+			inMMTSave(strMMT[0].MMTid);
+		}
+	
+		// delete batch where hostid and mmtid is matcj
+		inDatabase_BatchDelete();
 
-        if(CN_TRUE == strMMT[0].fMustSettFlag)
-        {
-//            strMMT[0].fMustSettFlag = CN_FALSE;	
-//			strcpy(strMMT[0].szSettleDate,"00000000");
-            inMMTSave(strMMT[0].MMTid);
-        }
-    
-        // delete batch where hostid and mmtid is matcj
-		//aaronnino for BDOCLG ver 9.0 fix on issue #0074 Clear Batch shorcut key is still deleting batch even if batch is empty start
-		inResult = inCTOS_ChkBatchEmpty();
-	    if(d_OK != inResult)
-	    {
-		    return;
-	    }
-		//aaronnino for BDOCLG ver 9.0 fix on issue #0074 Clear Batch shorcut key is still deleting batch even if batch is empty end
+		memset(&srAccumRec, 0x00, sizeof(ACCUM_REC));
+		memset(&strFile,0,sizeof(strFile));
+		vdCTOS_GetAccumName(&strFile, &srAccumRec);
+	
+		if((inResult = CTOS_FileDelete(strFile.szFileName)) != d_OK)
+		{
+			vdDebug_LogPrintf("[inMyFile_SettleRecordDelete]---Delete Record error[%04x]", inResult);
+		}
+		//create the accum file
+		memset(&srAccumRec, 0x00, sizeof(ACCUM_REC));
+		inCTOS_ReadAccumTotal(&srAccumRec);
 		
-        /*albert - start - 20161202 - Reprint of Detail Report for Last Settlement Report*/
-//		inDatabase_DeleteDetailReport(srTransRec.HDTid, srTransRec.MITid);
-//		inDatabase_BackupDetailReport(srTransRec.HDTid, srTransRec.MITid);
-		/*albert - end - 20161202 - Reprint of Detail Report for Last Settlement Report*/
-		
-        inDatabase_BatchDelete();
+		inCTOS_DeleteBKAccumTotal(&srAccumRec,strHDT.inHostIndex,srTransRec.MITid);
 
-        memset(&srAccumRec, 0x00, sizeof(ACCUM_REC));
-        memset(&strFile,0,sizeof(strFile));
-        vdCTOS_GetAccumName(&strFile, &srAccumRec);
-    
-        if((inResult = CTOS_FileDelete(strFile.szFileName)) != d_OK)
-        {
-            vdDebug_LogPrintf("[inMyFile_SettleRecordDelete]---Delete Record error[%04x]", inResult);
-        }
-        
-        //inCTOS_DeleteBKAccumTotal(&srAccumRec,strHDT.inHostIndex,srTransRec.MITid);
+		inMyFile_ReversalDelete();
 
-        inDatabase_InvoiceNumDelete(srTransRec.HDTid, srTransRec.MITid);
-        inMyFile_ReversalDelete();
-
-        inMyFile_AdviceDelete();
-        
-        inMyFile_TCUploadDelete();
+		inMyFile_AdviceDelete();
 		
-//		inMyFile_TransLogDelete();
-
-        vdLinuxCommandClearERMBitmap(); /*albert - ERM*/
-//		vdLinuxCommandClearDCCPNG(); //Clear all DCC SignPad PNG files.
-		
-		//inDatabase_SMACFooterDeleteAll();
-//		inDatabase_SMACFooterDelete(srTransRec.HDTid, srTransRec.MITid);
-		
-        CTOS_LCDTClearDisplay();
-        setLCDPrint(5, DISPLAY_POSITION_CENTER, "CLEAR BATCH");
-        setLCDPrint(6, DISPLAY_POSITION_CENTER, "RECORD DONE");
-        CTOS_Delay(1000); 
-    }                
+		inMyFile_TCUploadDelete();
+	
+		CTOS_LCDTClearDisplay();
+		setLCDPrint(5, DISPLAY_POSITION_CENTER, "CLEAR BATCH");
+		setLCDPrint(6, DISPLAY_POSITION_CENTER, "RECORD DONE");
+		CTOS_Delay(1000); 
+	}				 
 }
+
 
 int vdCTOS_DeleteReversal(void)
 {
@@ -1886,11 +1863,12 @@ int vdCTOS_DeleteReversal(void)
     
     vduiLightOn();                
 
-	inRet = inCTOS_TEMPCheckAndSelectMutipleMID();
-	if(d_OK != inRet)
-		return inRet;
+	//inRet = inCTOS_TEMPCheckAndSelectMutipleMID();
+	//if(d_OK != inRet)
+		//return inRet;
 
-    shHostIndex = inCTOS_SelectHostSettingWithIndicator(2);
+    //shHostIndex = inCTOS_SelectHostSettingWithIndicator(2);	
+    shHostIndex = inCTOS_SelectHostSetting();
     if (shHostIndex == -1)
         return;
 
@@ -1915,9 +1893,9 @@ int vdCTOS_DeleteReversal(void)
     }
 
 	//remove prompt fro selection-Merchant selection is done by inCTOS_TEMPCheckAndSelectMutipleMID
-	//	  inRet = inCTOS_CheckAndSelectMutipleMID();
-	//	  if(d_OK != inRet)
-	//		  return inRet;
+	inRet = inCTOS_CheckAndSelectMutipleMID();
+		  if(d_OK != inRet)
+			  return inRet;
 	inMMTReadRecord(srTransRec.HDTid,srTransRec.MITid);
 
     memset(szFileName,0,sizeof(szFileName));
@@ -1955,6 +1933,18 @@ void vdCTOS_PrintEMVTerminalConfig(void)
     
     return;
 }
+
+void vdCTOSS_PrintTerminalConfig(void)
+{
+    CTOS_LCDTClearDisplay();
+    #if 0
+    vdPrintTerminalConfig();
+	#else
+    vdPrintTerminalConfig();
+	#endif
+    return;
+}
+
 
 void vdCTOS_ThemesSetting(void)
 {
@@ -2177,6 +2167,100 @@ void vdCTOS_Debugmode(void)
                 vduiDisplayStringCenter(6,"PLEASE SELECT");
                 vduiDisplayStringCenter(7,"A VALID");
                 vduiDisplayStringCenter(8,"DEBUG MODE");
+                CTOS_Delay(2000);       
+            }
+        }
+        if (ret == d_KBD_CANCEL )
+            break ;
+    }
+       
+    return ;
+}
+
+
+void vdCTOSS_SelectPinpadType(void)
+{
+    BYTE bRet;
+    BYTE szInputBuf[15+1];
+    int inResult,inResult1;
+    TRANS_TOTAL stBankTotal;
+    BYTE strOut[30],strtemp[17],key;
+    USHORT ret;
+    USHORT usLen;
+    BYTE szTempBuf[12+1];
+    BOOL isKey;
+    int shHostIndex = 1;
+    int inNum = 0;
+    int inRet = 0;
+
+    inRet = inTCTRead(1);  
+    vdDebug_LogPrintf(". inTCTRead(%d)",inRet);
+
+    CTOS_LCDTClearDisplay();
+    vdDispTitleString("SETTING");
+    while(1)
+    {
+        clearLine(3);
+        clearLine(4);
+        clearLine(5);
+        clearLine(6);
+        clearLine(7);
+        clearLine(8);
+        setLCDPrint(3, DISPLAY_POSITION_LEFT, "PINPAD TYPE");
+        if(strTCT.byPinPadType == 0)
+            setLCDPrint(4, DISPLAY_POSITION_LEFT, "0");
+        if(strTCT.byPinPadType == 1)
+            setLCDPrint(4, DISPLAY_POSITION_LEFT, "1");        
+        if(strTCT.byPinPadType == 2)
+            setLCDPrint(4, DISPLAY_POSITION_LEFT, "2");
+		if(strTCT.byPinPadType == 3)
+            setLCDPrint(4, DISPLAY_POSITION_LEFT, "3");
+  
+        
+        CTOS_LCDTPrintXY(1, 5, "0-None	1-PCI100");
+        CTOS_LCDTPrintXY(1, 6, "2-OTHER 3-V3P");
+        
+        strcpy(strtemp,"New:") ;
+        CTOS_LCDTPrintXY(1, 7, strtemp);
+        memset(strOut,0x00, sizeof(strOut));
+        ret= shCTOS_GetNum(8, 0x01,  strOut, &usLen, 1, 1, 0, d_INPUT_TIMEOUT);
+        if (ret == d_KBD_CANCEL )
+            break;
+        else if(0 == ret )
+            break;
+        else if(ret==1)
+        {
+            if (strOut[0]==0x30 || strOut[0]==0x31 || strOut[0]==0x32 || strOut[0]==0x33)
+            {
+                 if(strOut[0] == 0x31)
+                 {
+                        strTCT.byPinPadType = 1;
+                 }
+                 if(strOut[0] == 0x30)
+                 {
+                        strTCT.byPinPadType = 0;
+                 }
+                 if(strOut[0] == 0x32)
+                 {
+                        strTCT.byPinPadType = 2;
+                 }
+				 if(strOut[0] == 0x33)
+                 {
+                        strTCT.byPinPadType = 3;
+                 }
+ 
+                
+                 inRet = inTCTSave(1);
+                 
+                 vdDebug_LogPrintf(". inTCTSave(%d)",inRet);
+                 break;
+             }
+             else
+             {
+                vduiWarningSound();
+                vduiDisplayStringCenter(6,"PLEASE SELECT");
+                vduiDisplayStringCenter(7,"A VALID");
+                vduiDisplayStringCenter(8,"PINPAD TYPE");
                 CTOS_Delay(2000);       
             }
         }
@@ -4202,6 +4286,60 @@ int inSelectTelcoSetting()
 }
 
 
+
+void vdCTOSS_ModifyStanNumber(void)
+{
+    BYTE bRet;
+    BYTE szInputBuf[15+1];
+    int inResult,inResult1;
+    BYTE strOut[30],strtemp[17],key;
+    USHORT ret;
+    USHORT usLen;
+    BYTE szStanNo[8+1];
+    BOOL isKey;
+    int shHostIndex = 1;
+    int inNum = 0;
+
+
+    CTOS_LCDTClearDisplay();
+    vdDispTitleString("Modify STAN");
+    shHostIndex = inCTOS_SelectHostSetting();
+	vdDebug_LogPrintf("shHostIndex=[%d]",shHostIndex);
+    if (shHostIndex == -1)
+        return;
+
+	inHDTRead(shHostIndex);
+	memset(szStanNo, 0x00, sizeof (szStanNo));
+	wub_hex_2_str(strHDT.szTraceNo,szStanNo,3);
+		
+    while(1)
+    {
+        setLCDPrint(3, DISPLAY_POSITION_LEFT, "Original STAN ");
+        setLCDPrint(4, DISPLAY_POSITION_LEFT, szStanNo);
+    
+        strcpy(strtemp,"New:");
+        CTOS_LCDTPrintXY(1, 7, strtemp);
+        memset(strOut,0x00, sizeof(strOut));
+        ret= shCTOS_GetNum(8, 0x01,  strOut, &usLen, 6, 6, 0, d_INPUT_TIMEOUT);
+        if (ret == d_KBD_CANCEL )
+            break;
+        else if(0 == ret)
+            break;
+        else if(ret==6)
+        {
+        	vdDebug_LogPrintf("strOut=[%s]",strOut);
+			wub_str_2_hex(strOut,strHDT.szTraceNo,6);
+			//inHDTUpdateTraceNum();
+			inHDTSave(shHostIndex);
+			break;
+       	}
+   		if (ret == d_KBD_CANCEL)
+        	break ;
+    }
+            
+	return ;
+}
+
 /* BDO CLG: Revised menu functions - start -- jzg */
 void vdDisplaySetup(void)
 {
@@ -6180,6 +6318,10 @@ vdCTOS_uiRestart(TRUE);
 
 }
 
+void vdCTOS_ECRConfig(void)
+{
+	vdSetECRConfig();	
+}
 
 void vdCTOS_SMFunctionKey(void)
 {
@@ -7211,4 +7353,93 @@ void put_env_charEx(char *tag, char *value)
 
 	vdDebug_LogPrintf("put_env_char [%s]=[%s] ret[%d]", tag, value, ret);
 }
+
+int inBackUpAppFilesToPenDrive(void)
+{
+    int inRet = d_NO;
+    char szSystemCmdPath[250];
+    BYTE exe_dir[128]={0};
+    BYTE exe_subdir[128]={0};
+    int inExeAPIndex = 0;
+    BYTE szScriptPath[128]={0};
+    BYTE szScriptFile[128]={0};
+    
+	char caPathbk[64 + 1];
+	
+
+    
+    memset(caPathbk,0x00,sizeof(caPathbk));
+	strcpy(caPathbk, DB_MULTIAP);
+    
+    memset(szSystemCmdPath,0x00,sizeof(szSystemCmdPath));
+    sprintf(szSystemCmdPath, "cp -r %s /media/udisk/",caPathbk);
+    system(szSystemCmdPath);
+	vdDebug_LogPrintf("szSystemCmdPath[%s]",szSystemCmdPath);
+
+
+
+    memset(szSystemCmdPath,0x00,sizeof(szSystemCmdPath));
+    strcpy(szSystemCmdPath, "sync");
+    system(szSystemCmdPath);
+
+    return d_OK;
+}
+
+//call this fun to export file to pen drive
+void vdCTOSS_ExportAllAppFiles(void)
+{
+    int inResult = d_NO;
+    BYTE szExportFilename[100];
+    char szSystemCmdPath[250];
+    int loop,inStatus;
+
+    CTOS_LCDTClearDisplay();
+    vdDispTitleString("Export app");
+
+    CTOS_LCDTPrintAligned(7, "Exporting...                            ", d_LCD_ALIGNLEFT);
+    CTOS_USBSelectMode(d_USB_HOST_MODE);
+    loop = 0;
+        
+    while (1)
+    {
+        CTOS_LCDTPrintXY(1, 8, "Checking Pen Drive");
+        inStatus = inCTOSS_GetRemovableStorageStatus();
+        if (inStatus == 2 || inStatus == 3)
+        {
+//			vdDebug_LogPrintf("Pen Drive........  ");
+                CTOS_LCDTPrintXY(1, 8, "                              ");
+                break;
+        }
+        else
+        {
+            //don't why need open many time, then can check the pen drive
+            CTOS_USBSelectMode(d_USB_HOST_MODE);
+
+            WaitKey(2);
+            loop++;
+            if (loop >=5)
+            {
+              CTOS_LCDTPrintXY(1, 8, "Pen Drive Not Exist");
+              CTOS_Beep();
+              WaitKey(1);
+              CTOS_USBSelectMode(d_USB_DEVICE_MODE);
+
+              return;
+            }
+        }
+    }
+    
+    inBackUpAppFilesToPenDrive();
+    
+    CTOS_LCDTPrintAligned(8, "Export completed", d_LCD_ALIGNLEFT);
+    CTOS_Beep();
+    CTOS_USBSelectMode(d_USB_DEVICE_MODE);
+    WaitKey(5);
+
+    CTOS_LCDTClearDisplay();
+ 
+    return;
+	
+}
+
 

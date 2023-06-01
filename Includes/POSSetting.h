@@ -14,12 +14,18 @@ void vdCTOS_DialConfig(void);
 void vdCTOS_TerminalConfig(void); // mfl
 
 void vdCTOS_ModifyEdcSetting(void);
-//void vdCTOS_DeleteBatch(void);
-int vdCTOS_DeleteBatch(void);
+void vdCTOS_DeleteBatch(void);
+//int vdCTOS_DeleteBatch(void);
+void vdSetECRConfig(void);
 
 int vdCTOS_DeleteReversal(void);
 
 void vdCTOS_PrintEMVTerminalConfig(void);
+int inSelectTelcoSetting();
+void vdCTOSS_ModifyStanNumber(void);
+void vdCTOS_TMSRangeSetting(void);
+
+
 void vdCTOS_GPRSSetting(void);
 void vdCTOS_Debugmode(void);
 void vdCTOSS_CtlsMode(void);

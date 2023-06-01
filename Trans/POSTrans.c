@@ -118,7 +118,7 @@ extern int isdigit ( int c );
 
 
 //android-remove
-#if 0
+#if 1
 USHORT shCTOS_GetNum(IN  USHORT usY, IN  USHORT usLeftRight, OUT BYTE *baBuf, OUT  USHORT *usStrLen, USHORT usMinLen, USHORT usMaxLen, USHORT usByPassAllow, USHORT usTimeOutMS)
 {
 
@@ -5019,8 +5019,8 @@ int inCTOS_GetTxnPassword(void)
      unsigned char szOutput[30], szPassword[40+1];
      int  inTxnTypeID;
      short ret = 0;
-     short shMinLen;
-     short shMaxLen; //#00228 - PASSWORD and SUPER PASSWORD should limit to 4 digit entry//12;
+	 short shMinLen = 4;
+	 short shMaxLen = 6;
      BYTE key;
      BYTE Bret;
      short shCount =0;
@@ -5092,218 +5092,149 @@ int inCTOS_GetTxnPassword(void)
 		  case CTMS_UPDATE:
           if(SUPER_PW == strPIT.inPasswordLevel)
           {
-          shMinLen = PWD_MIN_LEN;
-          shMaxLen = PWD_MAX_LEN;
 
-          //CTOS_LCDTClearDisplay();
-          //vdDispTransTitle(srTransRec.byTransType);
-          //CTOS_LCDTPrintXY(1, 7,"SUPER PASSWORD:");
+                vdDebug_LogPrintf("inCTOS_GetTxnPassword     SUPER_PW ");
+                CTOS_LCDTClearDisplay();
+                //vduiClearBelow(2);
+                vdDispTransTitle(srTransRec.byTransType);
+                CTOS_LCDTPrintXY(1, 3, "ENTER PASSWORD:");
 
+                Bret = InputString(1, 4, 0x01, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT);
 
-          //dwWait = d_EVENT_KBD | d_EVENT_MSR | d_EVENT_SC;
-          //if ((dwWakeup & d_EVENT_MSR) == d_EVENT_MSR)
+                //issue:285
+                if (Bret == 255) //timeout
+                    return Bret;
+                //issue:285
 
-          //Bret = InputString(1, 8, 0x01, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT);
-
-		  //strcpy(szPassword,strTCT.szSuperPW);
-		  //memset(szOutput,0,sizeof(szOutput));
-		  //Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword, "ENTER PASSWORD");
-
-		  strcpy(szPassword,szMsg);
-		  strcat(szPassword, "|");
-		  strcat(szPassword,strTCT.szSuperPW);
-		  memset(szOutput,0,sizeof(szOutput));
-		  Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword);
-		  vdDebug_LogPrintf("2. SUPER_PW szOutput[%s], Bret[%d]", szOutput, Bret);
-
-          //CTOS_PrinterPutString(szOutput);
-          //CTOS_PrinterPutString(strTCT.szSuperPW);
-
-		  // Return char 'C' - 67 for decimal -- sidumili
-		  if(Bret == 67 || 0 == strcmp(szOutput, "CANCEL"))
-		  {
-			   vdDisplayMessageBox(1, 8, "", "USER CANCEL", "", MSG_TYPE_INFO);
-			   CTOS_Beep();
-			   CTOS_Delay(1000);
-			   return d_NO;
-		  }
-		  
-          if(d_KBD_CANCEL == Bret)
-               return Bret;
-          else if(Bret == 255)
-          	return Bret;		  
-          else if(strcmp(szOutput,strTCT.szSuperPW) == 0)
-          {
-               //clearLine(7);
-               //clearLine(8);
-               return d_OK;
-          }
-          else
-          {
-               //CTOS_LCDTClearDisplay();
-               vdDisplayErrorMsg(1, 8, "INVALID PASSWORD");
-               //vdClearBelowLine(8);
-               shRsesult = FAIL;
-               break;
-          }
+                //#issue:231
+                if (d_KBD_CANCEL == Bret)
+                    return Bret;
+                else
+                    //#issue:231
+                    if ((strcmp(szOutput, strTCT.szSuperPW) == 0) ||
+                        (strcmp(szOutput, strTCT.szSystemPW) == 0) ||
+                        (strcmp(szOutput, strTCT.szEngineerPW) == 0)) {
+                    return d_OK;
+                }                        //#issue:23
+                    /*else if(d_KBD_CANCEL == Bret)
+                                                return Bret;*/
+                    //#issue:23
+                else {
+                    //CTOS_LCDTClearDisplay();
+                    //vduiClearBelow(2);
+                    vdDisplayErrorMsg(1, 8, "WRONG PASSWORD");
+                    shRsesult = FAIL;
+                    break;
+                }
           }
           else if(SYSTERM_PW== strPIT.inPasswordLevel)
           {
-               shMinLen = PWD_MIN_LEN;
-               shMaxLen = PWD_MAX_LEN;
 
-               //CTOS_LCDTClearDisplay();
-               //vdDispTransTitle(srTransRec.byTransType);
-               //CTOS_LCDTPrintXY(1, 7,"SYSTEM PASSWORD:");
-			   //strcpy(szPassword, strTCT.szSystemPW);
-			   //memset(szOutput,0,sizeof(szOutput));
+                    vdDebug_LogPrintf("inCTOS_GetTxnPassword     SYSTERM_PW ");
+                    CTOS_LCDTClearDisplay();
+                    //vduiClearBelow(2);
+                    vdDispTransTitle(srTransRec.byTransType);
+                    CTOS_LCDTPrintXY(1, 3, "SYSTEM PASSWORD:");
 
-			   //Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword, "ENTER PASSWORD");
+                    Bret = InputString(1, 4, 0x01, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT);
 
-               //CTOS_PrinterPutString(szOutput);
-               //CTOS_PrinterPutString(strTCT.szSuperPW);
-               //CTOS_PrinterPutString(strTCT.szSystemPW);
-               //CTOS_PrinterPutString(strTCT.szEngineerPW);
-               
-			   strcpy(szPassword,szMsg);
-			   strcat(szPassword, "|");
-			   strcat(szPassword, strTCT.szSystemPW);
-			   memset(szOutput,0,sizeof(szOutput));
-			   Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword);
-			   vdDebug_LogPrintf("2. SYSTERM_PW szOutput[%s], Bret[%d]", szOutput, Bret);
+                    //issue:285
+                    if (Bret == 255) //timeout
+                        return Bret;
+                    //issue:285
 
-			   // Return char 'C' - 67 for decimal -- sidumili
-			   if(Bret == 67 || 0 == strcmp(szOutput, "CANCEL"))
-			   {
-				   	vdDisplayMessageBox(1, 8, "", "USER CANCEL", "", MSG_TYPE_INFO);
-					CTOS_Beep();
-					CTOS_Delay(1000);
-					return d_NO;
-			   }
-			   
-               if(d_KBD_CANCEL == Bret)
-                    return Bret;
-               else if(Bret == 255)
-                    return Bret;			   
-               else if((strcmp(szOutput,strTCT.szSuperPW) == 0) ||
-               (strcmp(szOutput,strTCT.szSystemPW) == 0)||
-               (strcmp(szOutput,strTCT.szEngineerPW) == 0) )
-               {
-                    //clearLine(7);
-                    //clearLine(8);
-                    return d_OK;
-               }
-               else
-               {
-                    //CTOS_LCDTClearDisplay();
-                    vdDisplayErrorMsg(1, 8, "INVALID PASSWORD");
-                    //vdClearBelowLine(8);
-                    shRsesult = FAIL;
-                    break;
-               }
-          }
+                    //#issue:231
+                    if (d_KBD_CANCEL == Bret)
+                        return Bret;
+                    else
+                        //#issue:231
+
+                        if (strcmp(szOutput, strTCT.szSystemPW) == 0) {
+                        return d_OK;
+                    }                        //#issue:23
+                        /*else if(d_KBD_CANCEL == Bret)
+                                                    return Bret;*/
+                        //#issue:23
+                    else {
+                        //CTOS_LCDTClearDisplay();
+                        //vduiClearBelow(2);
+                        vdDisplayErrorMsg(1, 8, "WRONG PASSWORD");
+                        shRsesult = FAIL;
+                        break;
+                    }
+                }
           else if(ENGINEERPW== strPIT.inPasswordLevel)
           {
-               shMinLen = PWD_MIN_LEN;
-               shMaxLen = PWD_MAX_LEN;
+	            vdDebug_LogPrintf("inCTOS_GetTxnPassword	 ENGINEERPW [%s]",strTCT.szEngineerPW);
+	            CTOS_LCDTClearDisplay();
+	            //vduiClearBelow(2);
+	            vdDispTransTitle(srTransRec.byTransType);
+	            CTOS_LCDTPrintXY(1, 3, "PASSWORD:");
 
-               //CTOS_LCDTClearDisplay();
-               //vdDispTransTitle(srTransRec.byTransType);
-               //CTOS_LCDTPrintXY(1, 7,"PASSWORD:");
+	            Bret = InputString(1, 4, 0x01, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT);
+vdDebug_LogPrintf("Bret[%d]	 szOutput [%s]",Bret, szOutput);
+	            //issue:285
+	            if (Bret == 255) //timeout
+	                return Bret;
+	            //issue:285
 
-			   //Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword, "ENTER PASSWORD");
-			   strcpy(szPassword,szMsg);
-			   strcat(szPassword, "|");
-			   strcat(szPassword, strTCT.szEngineerPW);
-			   memset(szOutput,0,sizeof(szOutput));
-			   Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword);
-			   vdDebug_LogPrintf("3. ENGINEERPW szOutput[%s], Bret[%d]", szOutput, Bret);
+	            //#issue:231
+	            if (d_KBD_CANCEL == Bret)
+	                return Bret;
+	            else
+	                //#issue:231
 
-               //CTOS_PrinterPutString(szOutput);
-               //CTOS_PrinterPutString(strTCT.szEngineerPW);
+	                if (strcmp(szOutput, strTCT.szEngineerPW) == 0) {
+	                return d_OK;
+	            }
+	            //#issue:23
+	            /*else if(d_KBD_CANCEL == Bret)
+	                                        return Bret;*/
+	            //#issue:23
+	            {
+	                CTOS_LCDTClearDisplay();
+	                vdDisplayErrorMsg(1, 8, "WRONG PASSWORD");
+	                shRsesult = FAIL;
+	                break;
+	            }
 
-               // Return char 'C' - 67 for decimal -- sidumili
-			   if(Bret == 67 || 0 == strcmp(szOutput, "CANCEL"))
-			   {
-				   	vdDisplayMessageBox(1, 8, "", "USER CANCEL", "", MSG_TYPE_INFO);
-					CTOS_Beep();
-					CTOS_Delay(1000);
-					return d_NO;
-			   }
-
-               if(d_KBD_CANCEL == Bret)
-                    return Bret;
-               else if(Bret == 255)
-                    return Bret;			  
-               else if(strcmp(szOutput,strTCT.szEngineerPW) == 0)
-               {
-                    //clearLine(7);
-                    //clearLine(8);
-                    return d_OK;
-               }
-               else
-               {
-                    //CTOS_LCDTClearDisplay();
-                    vdDisplayErrorMsg(1, 8, "INVALID PASSWORD");
-                    vdClearBelowLine(8);
-                    shRsesult = FAIL;
-                    break;
-               }
-
-          }
+	        }
           else if(MERCHANT_PW== strPIT.inPasswordLevel)
           {
-               shMinLen = PWD_MIN_LEN;
-               shMaxLen = PWD_MAX_LEN;
+	            vdDebug_LogPrintf("inCTOS_GetTxnPassword	 ENGINEERPW ");
+	            CTOS_LCDTClearDisplay();
+	            //vduiClearBelow(2);
+	            vdDispTransTitle(srTransRec.byTransType);
+	            CTOS_LCDTPrintXY(1, 3, "PASSWORD:");
 
-               //CTOS_LCDTClearDisplay();
-               //vdDispTransTitle(srTransRec.byTransType);
-               //CTOS_LCDTPrintXY(1, 7,"MERCHANT PASSWORD:");
+	            Bret = InputString(1, 4, 0x01, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT);
 
-               //Bret = InputString(1, 8, 0x01, 0x02,szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT);
-			   //Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword, "ENTER PASSWORD");
-			   
-			   //Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword, "ENTER PASSWORD");
-			   strcpy(szPassword,szMsg);
-			   strcat(szPassword, "|");
-			   strcat(szPassword, strTCT.szMerchantPW);
-			   memset(szOutput,0,sizeof(szOutput));
-			   Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword);
-			   vdDebug_LogPrintf("4. MERCHANT_PW szOutput[%s], Bret[%d]", szOutput, Bret);
-			   
-               //CTOS_PrinterPutString(szOutput);
-               //CTOS_PrinterPutString(strTCT.szSuperPW);
-               //CTOS_PrinterPutString(strTCT.szSystemPW);
-               //CTOS_PrinterPutString(strTCT.szMerchantPW);
+	            //issue:285
+	            if (Bret == 255) //timeout
+	                return Bret;
+	            //issue:285
 
-			   // Return char 'C' - 67 for decimal -- sidumili
-			   if(Bret == 67 || 0 == strcmp(szOutput, "CANCEL"))
-			   {
-				   	vdDisplayMessageBox(1, 8, "", "USER CANCEL", "", MSG_TYPE_INFO);
-					CTOS_Beep();
-					CTOS_Delay(1000);
-					return d_NO;
-			   }
-			   
-               if(d_KBD_CANCEL == Bret)
-                    return Bret;
-               else if(Bret == 255)
-                    return Bret;			   
-               else if (strcmp(szOutput,strTCT.szMerchantPW) == 0)
-               {
-                    //clearLine(7);
-                    //clearLine(8);
-                    return d_OK;
-               }
-               else
-               {
-                    //CTOS_LCDTClearDisplay();
-                    vdDisplayErrorMsg(1, 8, "INVALID PASSWORD");
-                    //vdClearBelowLine(8);
-                    shRsesult = FAIL;
-                    break;
-               }
-          }
+	            //#issue:231
+	            if (d_KBD_CANCEL == Bret)
+	                return Bret;
+	            else
+	                //#issue:231
+
+	                if (strcmp(szOutput, strTCT.szMerchantPW) == 0) {
+	                return d_OK;
+	            }
+	            //#issue:23
+	            /*else if(d_KBD_CANCEL == Bret)
+	                                        return Bret;*/
+	            //#issue:23
+	            {
+	                CTOS_LCDTClearDisplay();
+	                vdDisplayErrorMsg(1, 8, "WRONG PASSWORD");
+	                shRsesult = FAIL;
+	                break;
+	            }
+
+	        }
           else
           {
           //clearLine(7);

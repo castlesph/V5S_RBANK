@@ -80,7 +80,7 @@ extern BYTE szSubnetMask[50+1];
 
 extern BOOL fRePrintFlag;
 	
-#if 0
+#if 1
 #if 0
 
 #ifndef d_CTMS_INFO_LAST_UPDATE_TIME
@@ -606,7 +606,7 @@ int inCTOSS_CheckIntervialDateFrom2013(int y,int m,int d)
     return s;
 }
 
-
+#if 0
 int inCTOSS_SettlementCheckTMSDownloadRequest(void)
 {
     
@@ -730,6 +730,7 @@ int inCTOSS_SettlementCheckTMSDownloadRequest(void)
 	inCTLOS_Updatepowrfail(PFR_IDLE_STATE);
     return d_OK;
 }
+#endif
 
 int inCTOSS_CheckIfPendingTMSDownload(void)
 {
@@ -819,6 +820,7 @@ int inCTOSS_TMSDownloadRequest(void)
     //if(inCheckBatchEmtpy() > 0)
     //	return d_NO;	
     //if(inCheckBatchEmtpy() > 0)
+   #if 0 
     if(inCountBatchesWithTxn() > 0)
     {
 		vdDisplayErrorMsgResp2("PLEASE SETTLE","FIRST","AND TRY AGAIN");
@@ -831,6 +833,7 @@ int inCTOSS_TMSDownloadRequest(void)
 		
         return d_NO;
     }
+	#endif
 
     //check if TMS is downloading
     //vdDebug_LogPrintf("Check Get Status");
@@ -1323,7 +1326,7 @@ int inCTOSS_TMSPreConfig2(int inComType)
 	return usRes;
 }
 
-
+#if 0
 //adc
 int inCTOSS_ADLSettlementCheckTMSDownloadRequest(void)
 {
@@ -1462,19 +1465,17 @@ int inCTOSS_ADLSettlementCheckTMSDownloadRequest(void)
     return d_OK;
 }
 //adc
-
+#endif
 
 /*backup transaction data should be by merchant and by host, so follow the MMT*/
 int inCTOSS_TMSBackupTxnData(void)
 {
-	BOOL fInvoiceNo = FALSE;
 	int inMMTNum = 0;
 	int inIdx = 0;
 	int inRet = d_OK;
-	int inMerchID[400]={0};
 	
-	//TXN_BAK_DATA		strTBD;
-	//extern STRUCT_MMT strMMTRec;
+	TXN_BAK_DATA		strTBD;
+	extern STRUCT_MMT strMMTRec;
 
 	vdDebug_LogPrintf("=====inCTOSS_TMSBackupTxnData=====");
 
@@ -1482,63 +1483,44 @@ int inCTOSS_TMSBackupTxnData(void)
 	if (inCheckFileExist(TBD_FILE_NAME) == d_OK)
 		inRemoveConfRecFile(TBD_FILE_NAME);
 
-	CTOS_LCDTPrintXY (1, 7, "Saving");
-	CTOS_LCDTPrintXY (1, 8, "Transaction Data..");
+	CTOS_LCDTPrintXY (1, 7, "Backup Txn Data...");
 	CTOS_Delay(2000);
 
-	inTCTRead(1);
-	
 	/*the backup txn data record depend on the merchant record*/
-	
-	/*get transaction data by MMT*/
-	inDatabase_TerminalOpenDatabase();
-	inMMTEnabledMerchants(inMerchID);
-	inMMTNum = inMMTEnabledMerchants(inMerchID);
+	inMMTNum = inMMTNumRecord();
 	vdDebug_LogPrintf("inMMTNumRecord[%d]", inMMTNum);
-	for (inIdx=0; inIdx<inMMTNum; inIdx++)
-	{
-		vdDebug_LogPrintf("MMTid %d",inMerchID[inIdx]);
-		
-		memset(&strTBD, 0x00, sizeof(TXN_BAK_DATA));
-		memset(&strMMTRec,0x00,sizeof(STRUCT_MMT));
-		
-		inMMTReadSelectedData(inMerchID[inIdx]);
-		strMMTRec.MMTid = inMerchID[inIdx];
-		vdDebug_LogPrintf("inIdx[%d]MMTid[%d]HDTid[%d] MITid[%d]", inIdx,strMMTRec.MMTid, strMMTRec.HDTid, strMMTRec.MITid);
 
-		/*HDTid*/
+	/*get transaction data by MMT*/
+	for (inIdx=1; inIdx<=inMMTNum; inIdx++)
+	{
+		memset(&strTBD, 0x00, sizeof(strTBD));
+		inMMTReadSelectedData(inIdx);
+
+		vdDebug_LogPrintf("inIdx[%d]HDTid[%d] MITid[%d]", inIdx, strMMTRec.HDTid, strMMTRec.MITid);
+
+		vdDebug_LogPrintf("szMerchantName[%s]", strMMTRec.szMerchantName);		/*HDT id*/
+
+		/*HDT id*/
 		strTBD.inHDTid = strMMTRec.HDTid;
 
-		/*MITid*/
+		/*MIT id*/
 		strTBD.inMITid = strMMTRec.MITid;
 
 		/*Batch number*/
 		memcpy(strTBD.szBatchNo, strMMTRec.szBatchNo, BATCH_NO_BCD_SIZE);
 
 		/*Trace number get from HDT, (will it be set in MMT???)*/
-		inHDTReadEx(strMMTRec.HDTid);
+		inHDTRead(strMMTRec.HDTid);
 		memcpy(strTBD.szTraceNo, strHDT.szTraceNo, TRACE_NO_BCD_SIZE);
 
-		if (!fInvoiceNo)  
-		{
-			/*Invoice No*/
-			memcpy(strTBD.szInvoiceNo, strTCT.szInvoiceNo, INVOICE_BCD_SIZE);
-			memcpy(strTBD.szLastInvoiceNo, strTCT.szLastInvoiceNo, INVOICE_BCD_SIZE);
-			fInvoiceNo = TRUE;  
-		}
-		
-		
 		DebugAddHEX("strTBD.szBatchNo", strTBD.szBatchNo, 3);
 		DebugAddHEX("strTBD.szTraceNo", strTBD.szTraceNo, 3);
-		DebugAddHEX("strTBD.szInvoiceNo", strTBD.szInvoiceNo, 3);
-		DebugAddHEX("strTBD.szInvoiceNo", strTBD.szLastInvoiceNo, 3);
 
 		/*Save to backup file -- append only*/
 		inRet = inAppendConfRec(TBD_FILE_NAME, sizeof(TXN_BAK_DATA), (char *)&strTBD);
 		vdDebug_LogPrintf("Save Rec[%d]", inRet);
 	}
-	
-	inDatabase_TerminalCloseDatabase();
+
 	return d_OK;
 	
 }
@@ -1772,14 +1754,13 @@ int inCTOSS_TMSBackUpReprintDetailData(void)
 /*Restore the txn data base on Backup record*/
 int inCTOSS_TMSRestoreTxnData(void)
 {
-	BOOL fInvoiceNo = FALSE;
 	int inTBDNum = 0;
 	int inMMTNum = 0;
 	int inIdx = 0;
 	int inRet = d_OK;
 	int inFileSize = 0;
 	
-	//TXN_BAK_DATA		strTBD;
+	TXN_BAK_DATA		strTBD;
 	extern STRUCT_MMT strMMTRec;
 
 	vdDebug_LogPrintf("=====inCTOSS_TMSRestoreTxnData=====");
@@ -1787,16 +1768,13 @@ int inCTOSS_TMSRestoreTxnData(void)
 	if (inCheckFileExist(TBD_FILE_NAME) != d_OK)
 		return d_OK;
 
-	CTOS_LCDTClearDisplay();
-	CTOS_LCDTPrintXY (1, 7, "Loading");
-	CTOS_LCDTPrintXY (1, 7, "Transaction Data..");
+	CTOS_LCDTPrintXY (1, 7, "Restore Txn Data...");
 	CTOS_Delay(2000);
 
 	inTBDNum = inGetNumberOfConfRecs(TBD_FILE_NAME, sizeof(TXN_BAK_DATA));
 	
 	vdDebug_LogPrintf("inDB_GetTableTotalRecNum[%d]", inTBDNum);
 
-	inDatabase_TerminalOpenDatabase();
 	/*loop read record from backup file*/
 	for (inIdx=1; inIdx<=inTBDNum; inIdx++)
 	{
@@ -1808,34 +1786,24 @@ int inCTOSS_TMSRestoreTxnData(void)
 
 		/*Update MMT*/
 		/*find the match MMT record, by HDTid and MITid*/
-		inRet = inMMTReadRecordEx(strTBD.inHDTid, strTBD.inMITid);
+		inRet = inMMTReadRecord(strTBD.inHDTid, strTBD.inMITid);
 		if (inRet == d_OK)//only read success then update the result
 		{
 			memcpy(strMMT[0].szBatchNo, strTBD.szBatchNo, BATCH_NO_BCD_SIZE);
-			//inMMTSaveEx(strMMT[0].MMTid);
-			inTMSMMTSave(strMMT[0].MMTid);
+			inMMTSave(strMMT[0].MMTid);
 		}
 		vdDebug_LogPrintf("updating [%s]", strMMT[0].szMerchantName);
 
 		/*Update HDT*/
-		inRet = inHDTReadEx(strTBD.inHDTid);
+		inRet = inHDTRead(strTBD.inHDTid);
 		if (inRet == d_OK)//only read success then update the result
 		{
 			memcpy(strHDT.szTraceNo, strTBD.szTraceNo, TRACE_NO_BCD_SIZE);
-			inHDTSaveEx(strTBD.inHDTid);
-		}
-
-		// Save InvoiceNo/LastInvoiceNo  
-		if (!fInvoiceNo)  
-		{   
-			memcpy(strTCT.szInvoiceNo, strTBD.szInvoiceNo, INVOICE_BCD_SIZE);   
-			memcpy(strTCT.szLastInvoiceNo, strTBD.szLastInvoiceNo, INVOICE_BCD_SIZE);   
-			inTCTInvoiceNoSave(1);   
-			fInvoiceNo = TRUE;  
+			inHDTSave(strTBD.inHDTid);
 		}
 		
 	}
-	inDatabase_TerminalCloseDatabase();
+
 	/*after restore data, delete the backup data*/
 	if (inCheckFileExist(TBD_FILE_NAME) == d_OK)
 		inRemoveConfRecFile(TBD_FILE_NAME);
@@ -1980,6 +1948,7 @@ int inCTOSS_TMSReadReprintDetailData(void)
 	return d_OK;
 }
 
+#if 0
 int inCheckifAutoDL(void)
 {
 	int inRet = FALSE;
@@ -2053,7 +2022,7 @@ int inCheckifAutoDL(void)
 	vdDebug_LogPrintf("RETURN IS FALSE");
 	return inRet;
 }
-#if 0
+
 void vdAssesTMSDownloadStatus(CTOS_RTC *GetRTC)
 {
 	USHORT usResult = 0;

@@ -1152,6 +1152,7 @@ int inHDTRead(int inSeekCnt)
 	int result;
 	int inResult = d_NO;
 	char *sql = "SELECT inHostIndex, szHostLabel, szTPDU, szNII, fReversalEnable, fHostEnable, szTraceNo, fSignOn, ulLastTransSavedIndex, inCurrencyIdx, szAPName, inFailedREV, inDeleteREV, inNumAdv, ulCRC, szMinInstAmt, fFooterLogo, fLast4Digit, szFooterLogoName, szHeaderLogoName, fMaskDetail, fTipAllowFlag, ulTipPercent, fHostTPSec, fHostTLESec FROM HDT WHERE HDTid = ? AND fHostEnable = ?";
+	vdDebug_LogPrintf("inHDTRead=[%d]",inSeekCnt);
 		
 	/* open the database */
 	result = sqlite3_open(DB_TERMINAL,&db);
@@ -1183,7 +1184,7 @@ int inHDTRead(int inSeekCnt)
 
             /* szHostLabel */
 			strcpy((char*)strHDT.szHostLabel, (char *)sqlite3_column_text(stmt, inStmtSeq +=1));
-            
+            vdDebug_LogPrintf("strHDT.szHostLabel=[%s]",strHDT.szHostLabel);
    
 			/*szTPDU*/
 			memcpy(strHDT.szTPDU, sqlite3_column_blob(stmt,inStmtSeq +=1 ), 5);
@@ -1519,6 +1520,7 @@ int inHDTSave(int inSeekCnt)
 {
 	int result;
 	char *sql = "UPDATE HDT SET inHostIndex = ? , szTPDU = ? ,szNII = ? ,fHostEnable = ? ,szTraceNo = ? ,fSignOn = ?,inFailedREV = ?,inNumAdv = ?, fLast4Digit = ?, fTipAllowFlag = ?, ulTipPercent = ?, inDeleteREV=?, fHostTLESec = ? WHERE  HDTid = ?";
+	vdDebug_LogPrintf("inHDTSave=[%d]",inSeekCnt);
 
 	/* open the database */
 	result = sqlite3_open(DB_TERMINAL,&db);
@@ -1584,6 +1586,7 @@ int inHDTSave(int inSeekCnt)
 
 	sqlite3_finalize(stmt);
 	sqlite3_close(db);
+	vdDebug_LogPrintf("inHDTSave exit=[%d]",strHDT.inHostIndex);
 
 	return(d_OK);
 }
@@ -8426,9 +8429,11 @@ int inMultiAP_Database_BatchInsert(TRANS_DATA_TABLE *transData)
 	int result;	
 	char *sql1 = "SELECT MAX(TransDataid) FROM TransData";
  	char *sql = "INSERT INTO TransData (TransDataid, HDTid, MITid, CDTid, IITid, szHostLabel, szBatchNo, byTransType, byPanLen, szExpireDate, byEntryMode, szTotalAmount, szBaseAmount, szTipAmount, byOrgTransType, szMacBlock, szYear, szDate, szTime, szOrgDate, szOrgTime, szAuthCode, szRRN, szInvoiceNo, szOrgInvoiceNo, byPrintType, byVoided, byAdjusted, byUploaded, byTCuploaded, szCardholderName, szzAMEX4DBC, szStoreID, szRespCode, szServiceCode, byContinueTrans, byOffline, byReversal, byEMVFallBack, shTransResult, szTpdu, szIsoField03, szMassageType, szPAN, szCardLable, usTrack1Len, usTrack2Len, usTrack3Len, szTrack1Data, szTrack2Data, szTrack3Data, usChipDataLen, baChipData, usAdditionalDataLen, baAdditionalData, bWaveSID,usWaveSTransResult,bWaveSCVMAnalysis, ulTraceNum, ulOrgTraceNum, usTerminalCommunicationMode, ulSavedIndex, byPINEntryCapability, byPackType, szOrgAmount, szCVV2, inCardType, byTCFailUpCnt, byCardTypeNum, byEMVTransStatus, T5A_len, T5A, T5F2A, T5F30, T5F34, T5F34_len, T82, T84_len, T84, T8A, T91, T91Len, T95, T9A, T9C, T9F02, T9F03, T9F09, T9F10_len, T9F10, T9F1A, T9F26, T9F27, T9F33, T9F34, T9F35, T9F36_len, T9F36, T9F37, T9F41, T9F53, ISR, ISRLen, T9B, T5F24, T71Len, T71, T72Len, T72, T9F06, T9F1E, T9F28, T9F29, szChipLabel, szTID, szMID, szHostLabel, szBatchNo, szPromo, fInstallment, fLoyalty, fDebit, fCredit, szResponseText, szMerchantName, fECRTxnFlg, fAutoSettleFlag, szECRPANFormatted, szECRRespText, szECRMerchantName, szECRRespCode, fBillsPaymentCash) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+ 	//char *sql = "INSERT INTO TransData (TransDataid, HDTid, MITid, CDTid, IITid, szHostLabel, szBatchNo, byTransType, byPanLen, szExpireDate, byEntryMode, szTotalAmount, szBaseAmount, szTipAmount, byOrgTransType, szMacBlock, szYear, szDate, szTime, szOrgDate, szOrgTime, szAuthCode, szRRN, szInvoiceNo, szOrgInvoiceNo, byPrintType, byVoided, byAdjusted, byUploaded, byTCuploaded, szCardholderName, szzAMEX4DBC, szStoreID, szRespCode, szServiceCode, byContinueTrans, byOffline, byReversal, byEMVFallBack, shTransResult, szTpdu, szIsoField03, szMassageType, szPAN, szCardLable, usTrack1Len, usTrack2Len, usTrack3Len, szTrack1Data, szTrack2Data, szTrack3Data, usChipDataLen, baChipData, usAdditionalDataLen, baAdditionalData, bWaveSID,usWaveSTransResult,bWaveSCVMAnalysis, ulTraceNum, ulOrgTraceNum, usTerminalCommunicationMode, ulSavedIndex, byPINEntryCapability, byPackType, szOrgAmount, szCVV2, inCardType, byTCFailUpCnt, byCardTypeNum, byEMVTransStatus, T5A_len, T5A, T5F2A, T5F30, T5F34, T5F34_len, T82, T84_len, T84, T8A, T91, T91Len, T95, T9A, T9C, T9F02, T9F03, T9F09, T9F10_len, T9F10, T9F1A, T9F26, T9F27, T9F33, T9F34, T9F35, T9F36_len, T9F36, T9F37, T9F41, T9F53, ISR, ISRLen, T9B, T5F24, T71Len, T71, T72Len, T72, T9F06, T9F1E, T9F28, T9F29, szChipLabel, szTID, szMID, szHostLabel, szBatchNo, szPromo, fInstallment, fLoyalty, fDebit, fCredit, szResponseText, szMerchantName, fECRTxnFlg, fAutoSettleFlag, szECRPANFormatted, szECRRespText, szECRMerchantName, szECRRespCode) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	/* open the database */
 	result = sqlite3_open(DB_MULTIAP,&db);
+	vdDebug_LogPrintf("saturn inMultiAP_Database_BatchInsert,result=[%d]", result);
 	if (result != SQLITE_OK) {
 		sqlite3_close(db);
 		return 1;
@@ -8437,7 +8442,12 @@ int inMultiAP_Database_BatchInsert(TRANS_DATA_TABLE *transData)
 
 	/* prepare the sql, leave stmt ready for loop */
 	result = sqlite3_prepare_v2(db, sql1, -1, &stmt, NULL);
+        vdDebug_LogPrintf("sqlite3_prepare_v2,result=[%d]", result);
 	if (result != SQLITE_OK) {
+            char szErr[128] = {0};
+            
+            strcpy(szErr, sqlite3_errmsg(db));
+            vdDebug_LogPrintf("errmsg=[%s]", szErr);
 		sqlite3_close(db);
 		return 2;
 	}
@@ -8459,6 +8469,7 @@ int inMultiAP_Database_BatchInsert(TRANS_DATA_TABLE *transData)
 	   
 	/* open the database */
 	result = sqlite3_open(DB_MULTIAP,&db);
+	vdDebug_LogPrintf("saturn sqlite3_open,result=[%d]", result);
 	if (result != SQLITE_OK) {
 		sqlite3_close(db);
 		return 1;
@@ -8467,7 +8478,12 @@ int inMultiAP_Database_BatchInsert(TRANS_DATA_TABLE *transData)
 	sqlite3_exec( db, "begin", 0, 0, NULL );
 	/* prepare the sql, leave stmt ready for loop */
 	result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+        vdDebug_LogPrintf("sqlite3_prepare_v2,result=[%d]", result);
 	if (result != SQLITE_OK) {
+                     char szErr[128] = {0};
+            
+            strcpy(szErr, sqlite3_errmsg(db));
+            vdDebug_LogPrintf("errmsg=[%s]", szErr);
 		sqlite3_close(db);
 		return 2;
 	}
@@ -8623,6 +8639,7 @@ int inMultiAP_Database_BatchInsert(TRANS_DATA_TABLE *transData)
 
 	sqlite3_finalize(stmt);
 	sqlite3_close(db);
+	vdDebug_LogPrintf("saturn inMultiAP_Database_BatchInsert,transData->HDTid=[%d]", transData->HDTid);
 
 	return(ST_SUCCESS);
 }
@@ -13390,4 +13407,75 @@ int inUSRReadAdminEx(int inSeekCnt)
 
     return(d_OK);
 }
+
+/*For TMS, read all MMT records but only need few data*/
+STRUCT_MMT      strMMTRec;
+
+int inMMTReadSelectedData(int inSeekCnt)
+{
+	int result;
+	int inResult = d_NO;
+	char *sql = "SELECT MITid, HDTid, szHostName, szMerchantName, szTID, szMID, szBatchNo, fMMTEnable FROM MMT WHERE MMTid = ?";
+	int incount = 0;
+	
+	/* open the database */
+	result = sqlite3_open(DB_TERMINAL,&db);
+	if (result != SQLITE_OK) {
+		sqlite3_close(db);
+		return 1;
+	}
+	sqlite3_exec( db, "begin", 0, 0, NULL );
+	/* prepare the sql, leave stmt ready for loop */
+	result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+	if (result != SQLITE_OK) {
+		sqlite3_close(db);
+		return 2;
+	}
+    
+	inStmtSeq = 0;
+	sqlite3_bind_int(stmt, inStmtSeq +=1, inSeekCnt);
+	
+	/* loop reading each row until step returns anything other than SQLITE_ROW */
+	do {
+		result = sqlite3_step(stmt);
+		if (result == SQLITE_ROW) { /* can read data */
+			inResult = d_OK;
+			inStmtSeq = 0;
+			
+            /* MITid */
+			strMMTRec.MITid = sqlite3_column_int(stmt,inStmtSeq);
+			            
+			/* HDTid */
+			strMMTRec.HDTid = sqlite3_column_int(stmt,inStmtSeq +=1 );
+			
+			/*szHostName*/
+			strcpy((char*)strMMTRec.szHostName, (char *)sqlite3_column_text(stmt,inStmtSeq +=1));
+
+			/* szMerchantName */			
+			strcpy((char*)strMMTRec.szMerchantName, (char *)sqlite3_column_text(stmt,inStmtSeq +=1 ));
+
+			/*szTID*/
+			strcpy((char*)strMMTRec.szTID, (char *)sqlite3_column_text(stmt,inStmtSeq +=1 ));
+
+			/*szMID*/
+			strcpy((char*)strMMTRec.szMID, (char *)sqlite3_column_text(stmt,inStmtSeq +=1 ));
+            
+			/*szBatchNo*/
+			memcpy(strMMTRec.szBatchNo, sqlite3_column_blob(stmt,inStmtSeq +=1 ), 3);
+
+            /* fMMTEnable */
+			strMMTRec.fMMTEnable = fGetBoolean((BYTE *)sqlite3_column_text(stmt,inStmtSeq +=1 ));
+
+			//incount++;
+		}
+	} while (result == SQLITE_ROW);
+
+	sqlite3_exec(db,"commit;",NULL,NULL,NULL);
+
+	sqlite3_finalize(stmt);
+	sqlite3_close(db);
+    
+    return(inResult);
+}
+
 

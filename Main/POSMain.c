@@ -1597,7 +1597,10 @@ int inCTOS_IdleEventProcess(void)
                     vdSetFirstIdleKey(0x00);
                     CTOS_LCDTClearDisplay();
                     break;
-					
+
+				//case d_KBD_9://RH for my testing ony
+						//vdCTOSS_ExportAllAppFiles();
+					break;
                 default:
 	                break;
             }

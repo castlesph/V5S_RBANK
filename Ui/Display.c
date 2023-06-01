@@ -1704,7 +1704,7 @@ int inCheckBatteryStatus(void)
 int inCheckBattery(void)
 {
 }
-
+#if 0
 int inCheckTMSBackUpFilesExists()
 {
     
@@ -1714,6 +1714,7 @@ int inCTOSS_TMSReadDetailData()
 {
     
 }
+#endif
 
 int inCheckFileExist(const char *szFileName)
 {
@@ -1750,10 +1751,12 @@ USHORT usCTOSS_LCDDisplay(BYTE *szStringMsg)
 {
 }
 
+#if 0
 USHORT shCTOS_GetNum(IN  USHORT usY, IN  USHORT usLeftRight, OUT BYTE *baBuf, OUT  USHORT *usStrLen, USHORT usMinLen, USHORT usMaxLen, USHORT usByPassAllow, USHORT usTimeOutMS)
 {
     
 }
+#endif
 
 USHORT usCARDENTRY(BYTE *szStringMsg)
 {
@@ -1956,9 +1959,11 @@ void vdPrintISOECRLog()
 {
     
 }
+#if 0
 int inCTOSS_TMSDownloadRequest()
 {
 }
+#endif
 
 int inFunctionKeyPasswordEx(char *p, int inPasswordLevel)
 {
@@ -1969,7 +1974,7 @@ int inPrintADCReport(BYTE flag)
 {
     
 }
-
+#if 0
 int inCTOSS_TMSReadReprintDetailData(void)
 {
     
@@ -1979,16 +1984,18 @@ int inCheckTMSReprintBackUpFilesExists(void)
 {
     
 }
-
+#endif
 int inDCCMMTUpdate()
 {
     
 }
 
+#if 0
 int inCTOSS_TMSRestoreTxnData()
 {
     
 }
+#endif
 
 int inCTOS_SelectCurrencyfromIDLE()
 {
@@ -2019,11 +2026,12 @@ USHORT getAppPackageInfo(BYTE *szAppName, BYTE *szStringMsg)
 {
     
 }
-
+#if 0
 int inCTOSS_TMSChkBatchEmpty(void)
 {
     
 }
+#endif
 
 USHORT EliteReceiptUI(BYTE *szStringMsg)
 {
@@ -2039,6 +2047,8 @@ int inCTOS_TEMPCheckAndSelectMutipleMID(void)
 {
     return 0;
 }
+
+#if 0
 int inCTOSS_CheckIntervialDateFrom2013(int y,int m,int d)
 {
     int x[13]={0,31,28,31,30,31,30,31,31,30,31,30,31};
@@ -2090,7 +2100,7 @@ int inCTOSS_TMSCheckIfDefaultApplication(void)
         return d_OK;
     
 }
-
+#endif
 int vdCTOS_EditBiller(void)
 {
     

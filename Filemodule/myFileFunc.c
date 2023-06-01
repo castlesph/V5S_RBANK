@@ -1462,3 +1462,130 @@ int inMyFile_TotalDelete(void)
 }
 
 
+
+/*-------------------------------------------------------------------------
+    Function:		inLoadConfRec
+    Description:	Loads a record from a given table
+    Parameters:		char *, int, int, char *
+    Returns:		d_NO, d_OK
+	Notes:
+--------------------------------------------------------------------------*/
+int inLoadConfRec (const char *szFileName, int inRecSize, int inRecNum, char *pchConfRec)
+{
+	int inResult;
+	FILE *phConfFHandle = NULL;
+	long lnSeekResult, lnOffset;
+
+	phConfFHandle = fopen(szFileName, "rb+");
+
+	if (phConfFHandle == NULL)
+	{
+		vdDebug_LogPrintf("Invalid index given");
+		return (d_NO);
+	}
+
+	
+	lnOffset = (long) (((long) inRecNum * (long) inRecSize));
+	lnSeekResult = fseek(phConfFHandle, lnOffset, SEEK_SET);
+	vdDebug_LogPrintf("fseek [%d]", lnSeekResult);
+	#if 0
+	if (lnSeekResult != lnOffset)  /* Invalid index given, return d_NO */
+	{
+		vdDebug_LogPrintf("Invalid index given");
+		fclose(phConfFHandle);
+		return (d_NO);
+	}
+	#endif
+
+	inResult = fread(pchConfRec, inRecSize, 1, phConfFHandle);
+	vdDebug_LogPrintf("fread [%d]", inResult);
+	if (inResult == 0L)          /* End of file reached, invalid index  */
+	{
+		vdDebug_LogPrintf("End of file reached");
+		fclose(phConfFHandle);
+		return (d_NO);
+	}
+
+	fclose(phConfFHandle);
+
+	return(d_OK);
+}
+
+
+/*-------------------------------------------------------------------------
+	@func int | inGetNumberOfConfRecs | Gets number of <p inRecSize> sized records within the Gendata file <p szFileName>
+	@parm char * | szFileName | Name of file to query
+	@parm int | inRecSize | Size of each record in file
+	@rdesc Returns the number of records in the file
+	@end
+--------------------------------------------------------------------------*/
+int inGetNumberOfConfRecs (char *szFileName, int inRecSize)
+{
+	long lnSize;
+        
+        FILE  *fPubKey;
+	long curpos,length;
+
+	vdDebug_LogPrintf("inGetNumberOfConfRecs[%s]", szFileName);
+	fPubKey = fopen( (char*)szFileName, "rb" );
+	if(fPubKey == NULL)
+		return -1;
+
+	curpos=ftell(fPubKey);
+	fseek(fPubKey,0L,SEEK_END);
+	lnSize=ftell(fPubKey);
+	fseek(fPubKey,curpos,SEEK_SET);
+
+	fclose(fPubKey);
+
+	//lnSize = lnGetFileSize(szFileName);
+	return((int) (lnSize / inRecSize));
+}
+
+
+/*-------------------------------------------------------------------------
+	@func int | inAppendConfRec | Saves contents of specified record to end of file
+	@parm char * | szFileName | Name of file to append to
+	@parm int | inRecSize | Size of each record in file
+	@parm char * | pchConfRec | Pointer to location to read the record data from
+	@rdesc Returns VS_SUCCESS of VS_ERR
+	@end
+--------------------------------------------------------------------------*/
+
+int inAppendConfRec (char *szFileName, int inRecSize, char *pchConfRec)
+{
+	int inResult = d_NO;
+	FILE *phConfFHandle = NULL;
+
+	if ((phConfFHandle = fopen(szFileName, "ab+")) != NULL)
+	{
+		/* Seek to the end of the file */
+		#if 0
+		if (fseek(phConfFHandle, 0L, SEEK_END) >= 0)
+			if (fwrite(pchConfRec, inRecSize, 1, phConfFHandle) == 1)
+				inResult = d_OK;
+		#endif
+		#if 1
+		//inResult = fseek(phConfFHandle, 0L, SEEK_END);
+		inResult = fwrite(pchConfRec, inRecSize, 1, phConfFHandle);
+		fflush(phConfFHandle);
+		fclose(phConfFHandle);
+		if(inResult == 1)
+			inResult = d_OK;
+		#endif
+	}
+	vdDebug_LogPrintf("inAppendConfRec [%d]", inResult);
+	return(inResult);
+}
+
+
+int inRemoveConfRecFile(char *szFileName)
+{
+	if (NULL != szFileName)
+		remove(szFileName);
+
+	return d_OK;
+}
+
+
+
