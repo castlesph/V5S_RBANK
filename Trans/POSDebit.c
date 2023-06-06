@@ -2269,7 +2269,8 @@ int inCTOS_RequestTerminalKey(void)
         return inRet;
 
    memset(szAppName, 0x00, sizeof(szAppName));
-   strcpy(szAppName, "com.Source.S1_BANCNET.BANCNET");
+//   strcpy(szAppName, "com.Source.S1_BANCNET.BANCNET");
+   strcpy(szAppName, "V5S_RBDEBIT");
    
    vdDebug_LogPrintf("SATURN inReserveApp1 APPNAME %s", szAppName);
 
