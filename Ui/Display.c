@@ -72,7 +72,8 @@ void setLCDPrint(int line,int position, char *pbBuf)
 {
 	short shXPos = 0,
 		shLen = 0;
-
+    int lens = 0;
+    int iInitX = 0;
 	shLen = strlen(pbBuf);
 	
 	switch(position)
@@ -82,17 +83,20 @@ void setLCDPrint(int line,int position, char *pbBuf)
 			break;
 
 		case DISPLAY_POSITION_CENTER:
-      shXPos = (MAX_CHAR_PER_LINE - (shLen * 2)) / 2;
-			if(shXPos == 0)
-				shXPos = 1;
-			CTOS_LCDTPrintXY(shXPos, line, pbBuf);
+			lens = strlen(pbBuf);
+
+			if((strTCT.byTerminalType == 1) || (strTCT.byTerminalType == 2))
+				iInitX = ((22 - lens) / 2) + 1;
+			else
+				iInitX = ((30 - lens) / 2) + 1;
+
+			CTOS_LCDTPrintXY(iInitX, line, pbBuf);
 			break;
 
 		case DISPLAY_POSITION_RIGHT:
-			shXPos = MAX_CHAR_PER_LINE - (shLen * 2);
-			if(shXPos == 0)
-				shXPos = 1;
-			CTOS_LCDTPrintXY(shXPos, line, pbBuf);
+			lens = strlen(pbBuf);
+			iInitX = 16 - lens + 1;
+			CTOS_LCDTPrintXY(iInitX, line, pbBuf);
 			break;
 	}
 }
@@ -1784,7 +1788,31 @@ short vduiAskConfirmation(char *szHeaderString)
 
 USHORT usCTOSS_Confirm(BYTE *szDispString)
 {
+    BYTE key;
+    int result = 0;
+    CTOS_KBDBufFlush(); //cleare key buffer
+    CTOS_LCDTPrintXY(1, 4, "PLS ENTER TO PROCEED");
+    CTOS_TimeOutSet (TIMER_ID_2 , 45*100);
+    while (1) {
+
+        CTOS_KBDHit(&key);
+        vdDebug_LogPrintf("key=%d", key);
+        if (key == d_KBD_ENTER) {
+			vduiClearBelow(7);
+            result = d_OK;
+            break;
+        } else if ((key == d_KBD_CANCEL)) {
+            result = d_NO;
+            vdSetErrorMessage("USER CANCEL");
+            break;
+        }
+        
+        if(CTOS_TimeOutCheck(TIMER_ID_2 )  == d_OK)
+            return  d_NO;
+    }
     
+    CTOS_KBDBufFlush ();
+    return result;
 }
 
 USHORT usCTOSS_Confirm2(BYTE *szDispString)

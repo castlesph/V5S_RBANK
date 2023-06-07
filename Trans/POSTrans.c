@@ -2364,22 +2364,23 @@ CARD_PROMPT_AGAIN:
 
 	memset(szDisMsg, 0x00, sizeof(szDisMsg));
 
-    strcpy(szDisMsg, szTitle);
-    strcat(szDisMsg, "|");
+//    strcpy(szDisMsg, szTitle);
+//    strcat(szDisMsg, "|");
 	
     strcat(szDisMsg, "PLEASE ");
 	if(fSwipeEnable == VS_TRUE)
 		strcat(szDisMsg, "SWIPE/");
 	strcat(szDisMsg, "INSERT CARD ");
+//	CTOS_LCDTPrintXY(1, 3, szDisMsg);
+        setLCDPrint(3, DISPLAY_POSITION_CENTER, szDisMsg);
+//    strcat(szDisMsg, "|");
+//    strcat(szDisMsg, "CARD ENTRY");
+//	strcat(szDisMsg, "|");
+//    strcat(szDisMsg, szManualEntryFlag);
+//	strcat(szDisMsg, "|");
+//    strcat(szDisMsg, "0"); /*do not display "OTHER PAYMENT OPTIONS"*/
 	
-    strcat(szDisMsg, "|");
-    strcat(szDisMsg, "CARD ENTRY");
-	strcat(szDisMsg, "|");
-    strcat(szDisMsg, szManualEntryFlag);
-	strcat(szDisMsg, "|");
-    strcat(szDisMsg, "0"); /*do not display "OTHER PAYMENT OPTIONS"*/
-	
-
+vdDebug_LogPrintf("szDisMsg[%s],fEntryCardfromIDLE=%d",szDisMsg, fEntryCardfromIDLE);
     if(fEntryCardfromIDLE != TRUE)
         inKey=usCARDENTRY(szDisMsg);
 	else
@@ -2459,7 +2460,8 @@ CARD_PROMPT_AGAIN:
 	
     if(d_OK != inCTOS_ValidFirstIdleKey())
     {
-        CTOS_LCDTClearDisplay();
+#if 0        
+//        CTOS_LCDTClearDisplay();
         vdDispTransTitle(srTransRec.byTransType);
         //if(isCheckTerminalMP200() != d_OK || isCheckTerminalNonTouch() != d_OK)
         //    inCTOS_DisplayIdleBMP();
@@ -2542,6 +2544,7 @@ CARD_PROMPT_AGAIN:
 			#endif
             fInsertOnlyDisp = VS_FALSE;
         }
+#endif 
         //aaronnino mcc v3 gprs fix on issue #0021 Incorrect terminal display upon swiping chip card on idle screen 2 of 3 end
     }
 
@@ -2551,9 +2554,64 @@ CARD_PROMPT_AGAIN:
 
 	//tine: android - use timer on C
 	CTOS_TimeOutSet(TIMER_ID_3, UI_TIMEOUT);
-
+    /*Clear KB bufer*/
+    CTOS_KBDBufFlush();
+    byKeyBuf = 0x00;
     while (1)
     {
+         CTOS_KBDInKey(&byKeyBuf); //input  
+         if ((byKeyBuf) || (d_OK == inCTOS_ValidFirstIdleKey()))
+         {
+            if (CTLS_V3_SHARECTLS != inCTOSS_GetCtlsMode() && CTLS_V3_INT_SHARECTLS != inCTOSS_GetCtlsMode())
+                inCTOSS_CLMCancelTransaction();
+
+            //                CTOS_KBDGet(&byKeyBuf);
+
+
+
+            if (byKeyBuf == d_KBD_CANCEL) {
+                CTOS_LCDTClearDisplay();
+                CTOS_KBDBufFlush();
+                //                    vdSetErrorMessage("TXN CANCELLED");
+                return USER_ABORT;
+            }
+
+            memset(srTransRec.szPAN, 0x00, sizeof (srTransRec.szPAN));
+            if (d_OK == inCTOS_ValidFirstIdleKey())
+                srTransRec.szPAN[0] = chGetFirstIdleKey();
+
+            vdDebug_LogPrintf("szPAN[%s]", srTransRec.szPAN);
+            //get the card number and get Expire Date
+            if (d_OK != inCTOS_ManualEntryProcess(srTransRec.szPAN)) {
+                vdSetFirstIdleKey(0x00);
+                CTOS_KBDBufFlush();
+                //vdSetErrorMessage("Get Card Fail M");
+                return USER_ABORT;
+            }
+
+            vdDebug_LogPrintf("szPAN[%s]", srTransRec.szPAN);
+            vdSetFirstIdleKey(0x00);
+            //Load the CDT table
+            if (d_OK != inCTOS_LoadCDTIndex()) {
+                CTOS_KBDBufFlush();
+                return USER_ABORT;
+            }
+
+
+			vdDebug_LogPrintf("inCTOS_WaveGetCardFields AAA[%d][%d][%d]", strCDT.fManEntry, srTransRec.byEntryMode, srTransRec.byTransType);
+
+            //@@IBR ADD 20170202 no manual entry
+            if (strCDT.fManEntry == FALSE && srTransRec.byTransType != REFUND) {
+                vduiClearBelow(8);
+                setLCDPrint(8, DISPLAY_POSITION_LEFT, "NO MANUAL ENTRY");
+                vduiWarningSound();
+                CTOS_Delay(1500);
+                return USER_ABORT;
+            }
+            //@@IBR FINISH ADD 20170202 no manual entry
+
+            break;
+           }
 		//tine: android - use timer on C
 		if(CTOS_TimeOutCheck(TIMER_ID_3 )  == d_YES) {
              ing_KeyPressed = 'T';
@@ -2721,8 +2779,8 @@ CARD_PROMPT_AGAIN:
              strcat(szDisMsg, "0"); //szManualEntryFlag 0 is off 1 is on
 			  
               ing_KeyPressed = 0;
-              usCARDENTRY(szDisMsg);
-				
+//              usCARDENTRY(szDisMsg);
+		setLCDPrint(3, DISPLAY_POSITION_CENTER, "PLEASE INSERT CARD");		
                 CTOS_Beep();
                 CTOS_Delay(1500);
                 CTOS_Beep();
@@ -2815,7 +2873,8 @@ CARD_PROMPT_AGAIN:
                        strcat(szDisMsg, "0"); //szManualEntryFlag 0 is off 1 is on
                        
                        ing_KeyPressed = 0;
-                       usCARDENTRY(szDisMsg);
+//                       usCARDENTRY(szDisMsg);
+                       setLCDPrint(3, DISPLAY_POSITION_CENTER, "PLEASE INSERT CARD");	
 				
                 CTOS_Beep();
                 CTOS_Delay(1500);
@@ -7012,7 +7071,7 @@ int inCTOS_GetCardFieldsCtls(void)
 
     DebugAddSTR("inCTOS_GetCardFieldsCtls","Processing...",20);
 
-	vdDebug_LogPrintf("saturn getcard fields");
+	vdDebug_LogPrintf("saturn getcard fields,inCTOSS_GetCtlsMode(%d)",inCTOSS_GetCtlsMode());
 	
 	//InsertCardUI();
 
@@ -7041,7 +7100,17 @@ CARD_PROMPT_AGAIN:
     {
 		szBillsPaymentCash[0]='1';
     }
-	
+	if((srTransRec.byTransType == BILLS_PAYMENT)
+            || (srTransRec.byTransType == CASH_IN)
+                || (srTransRec.byTransType == CASH_OUT)
+                )
+        {
+                fSwipeEnable = VS_FALSE;
+                fCTLSEnable = VS_FALSE;
+                fInsertOnlyDisp = VS_TRUE;
+                vdDebug_LogPrintf("--disable msr and ctls--");
+        
+        }
 	memset(szAmountBuff, 0x00, sizeof(szAmountBuff));
 	wub_hex_2_str(srTransRec.szTotalAmount, szAmountBuff, 6);
 	memset(szTemp1, 0x00, sizeof(szTemp1));	
@@ -7052,7 +7121,7 @@ CARD_PROMPT_AGAIN:
 	memset(szAmtMsg, 0x00, sizeof(szAmtMsg));
 	sprintf(szAmtMsg, "TOTAL AMOUNT\n%s", szTemp2);
 
-        CTOS_LCDTPrintXY(1, 2, szAmtMsg);
+//        CTOS_LCDTPrintXY(1, 2, szAmtMsg);
     //InsertCardUI();  //--Tine
     //DisplayMessage();
 //    strcpy(szDisMsg, szTitle);
@@ -7067,8 +7136,9 @@ CARD_PROMPT_AGAIN:
 		strcat(szDisMsg, "/TAP");
 
 	strcat(szDisMsg, " CARD");
-	CTOS_LCDTPrintXY(1, 3, szDisMsg);
-        
+
+//	CTOS_LCDTPrintXY(1, 3, szDisMsg);
+#if 0        
     strcat(szDisMsg, "|");
     //strcat(szDisMsg, "CARD ENTRY");
     //strcat(szDisMsg, szTemp2);
@@ -7079,7 +7149,7 @@ CARD_PROMPT_AGAIN:
 	strcat(szDisMsg, szBillsPaymentCash);
     //usCTOSS_LCDDisplay(szDisMsg);
 //    inKey = usCARDENTRY(szDisMsg);			//Tine:  24Apr2019
-
+#endif
     // flush buffer - for testing
     /*
     fix for issues #00115, 00116 and 00117
@@ -7131,11 +7201,13 @@ CARD_PROMPT_AGAIN:
 vdDebug_LogPrintf("V3 display...[%s]",szDisMsg);
     CTOS_LCDTClearDisplay();
     vdDispTransTitle(srTransRec.byTransType);
-    CTOS_LCDTPrintXY(1, 3, "    Present Card   ");
+//    CTOS_LCDTPrintXY(1, 3, "    Present Card   ");
+//    CTOS_LCDTPrintXY(1, 3, szDisMsg);
+    setLCDPrint(3, DISPLAY_POSITION_CENTER, szDisMsg);
     wub_hex_2_str(srTransRec.szTotalAmount, szTotalAmount, 6);
     sprintf(temp, " Amount: %lu.%02lu", atol(szTotalAmount)/100, atol(szTotalAmount)%100);
-    CTOS_LCDTPrintXY(1, 4, temp);
-
+//    CTOS_LCDTPrintXY(1, 4, temp);
+        setLCDPrint(4, DISPLAY_POSITION_CENTER, temp);
 	if (srTransRec.byTransType == REFUND)
 		szTransType[0] = 0x20;
 
@@ -7164,8 +7236,8 @@ vdDebug_LogPrintf("V3 display...[%s]",szDisMsg);
     if(d_OK != inCTOS_ValidFirstIdleKey())
     {
         
-		vdDebug_LogPrintf("saturn validate first idle key");
-		
+		vdDebug_LogPrintf("saturn validate first idle key,fInsertOnlyDisp=%d", fInsertOnlyDisp);
+#if 0		
         CTOS_LCDTClearDisplay();
         vdDispTransTitle(srTransRec.byTransType);
 
@@ -7180,16 +7252,29 @@ vdDebug_LogPrintf("V3 display...[%s]",szDisMsg);
 			vdDebug_LogPrintf("saturn finsertonly");
         	if(isCheckTerminalMP200() == d_OK || isCheckTerminalNonTouch() == d_OK)
 			{
-				setLCDPrint(3, DISPLAY_POSITION_CENTER, "PLEASE");
-				setLCDPrint(4, DISPLAY_POSITION_CENTER, "INSERT CARD");
+				setLCDPrint(3, DISPLAY_POSITION_CENTER, " PLEASE INSERT CARD");
+//				setLCDPrint(4, DISPLAY_POSITION_CENTER, "INSERT CARD");
 			}
-			/*else
+			else
 			{
-				inCTOS_DisplayIdleBMP();
-	            displayAppbmpDataEx(1, 30, "INSERT_ONLY.bmp", FALSE);
+//				inCTOS_DisplayIdleBMP();
+//                                displayAppbmpDataEx(1, 30, "INSERT_ONLY.bmp", FALSE);
+                                setLCDPrint(3, DISPLAY_POSITION_CENTER, " PLEASE INSERT CARD");
+//				setLCDPrint(4, DISPLAY_POSITION_CENTER, "INSERT CARD");
 	            
-			}*/
-            fInsertOnlyDisp = VS_FALSE;
+			}
+                     if((srTransRec.byTransType == BILLS_PAYMENT)
+                    || (srTransRec.byTransType == CASH_IN)
+                        || (srTransRec.byTransType == CASH_OUT)
+                        )
+                    {
+
+                            fInsertOnlyDisp = VS_TRUE;
+                            vdDebug_LogPrintf("--disable msr and ctls--");
+
+                    } 
+                    else
+                        fInsertOnlyDisp = VS_FALSE;
         }
 		else
 		{
@@ -7215,6 +7300,7 @@ vdDebug_LogPrintf("V3 display...[%s]",szDisMsg);
                         setLCDPrint(3, DISPLAY_POSITION_CENTER, "PLEASE TAP/INSERT");
 			setLCDPrint(4, DISPLAY_POSITION_CENTER, "SWIPE CARD");
                 }
+#endif        
         //aaronnino mcc v3 gprs fix on issue #0021 Incorrect terminal display upon swiping chip card on idle screen 2 of 3 end
 	}
 	#if 0
@@ -7238,13 +7324,68 @@ vdDebug_LogPrintf("V3 display...[%s]",szDisMsg);
 
     //CTOS_TimeOutSet (TIMER_ID_1 , GET_CARD_DATA_TIMEOUT_VALUE);
     CTOS_TimeOutSet (TIMER_ID_1 , UI_TIMEOUT);
-
+    /*Clear KB bufer*/
+    CTOS_KBDBufFlush();
+    byKeyBuf = 0x00;
     while (1)
     {
 
     //usCARDENTRY(szDisMsg);
-	vdDebug_LogPrintf("saturn inside while loop,ing_KeyPressed=%d",ing_KeyPressed);
+//	vdDebug_LogPrintf("saturn inside while loop,ing_KeyPressed=%d, byKeyBuf=%d",ing_KeyPressed, byKeyBuf);
+        CTOS_KBDInKey(&byKeyBuf); //input  
+        if ((byKeyBuf) || (d_OK == inCTOS_ValidFirstIdleKey()))
+        {
+            vdDebug_LogPrintf("got key, byKeyBuf=%d",byKeyBuf);
+            if (CTLS_V3_SHARECTLS != inCTOSS_GetCtlsMode() && CTLS_V3_INT_SHARECTLS != inCTOSS_GetCtlsMode())
+                inCTOSS_CLMCancelTransaction();
 
+            //                CTOS_KBDGet(&byKeyBuf);
+
+
+
+            if (byKeyBuf == d_KBD_CANCEL) {
+                CTOS_LCDTClearDisplay();
+                CTOS_KBDBufFlush();
+                //                    vdSetErrorMessage("TXN CANCELLED");
+                return USER_ABORT;
+            }
+
+            memset(srTransRec.szPAN, 0x00, sizeof (srTransRec.szPAN));
+            if (d_OK == inCTOS_ValidFirstIdleKey())
+                srTransRec.szPAN[0] = chGetFirstIdleKey();
+
+            vdDebug_LogPrintf("szPAN[%s]", srTransRec.szPAN);
+            //get the card number and get Expire Date
+            if (d_OK != inCTOS_ManualEntryProcess(srTransRec.szPAN)) {
+                vdSetFirstIdleKey(0x00);
+                CTOS_KBDBufFlush();
+                //vdSetErrorMessage("Get Card Fail M");
+                return USER_ABORT;
+            }
+
+            vdDebug_LogPrintf("szPAN[%s]", srTransRec.szPAN);
+            vdSetFirstIdleKey(0x00);
+            //Load the CDT table
+            if (d_OK != inCTOS_LoadCDTIndex()) {
+                CTOS_KBDBufFlush();
+                return USER_ABORT;
+            }
+
+
+            vdDebug_LogPrintf("inCTOS_WaveGetCardFields AAA[%d][%d][%d]", strCDT.fManEntry, srTransRec.byEntryMode, srTransRec.byTransType);
+
+            //@@IBR ADD 20170202 no manual entry
+            if (strCDT.fManEntry == FALSE && srTransRec.byTransType != REFUND) {
+                vduiClearBelow(8);
+                setLCDPrint(8, DISPLAY_POSITION_LEFT, "NO MANUAL ENTRY");
+                vduiWarningSound();
+                CTOS_Delay(1500);
+                return USER_ABORT;
+            }
+            //@@IBR FINISH ADD 20170202 no manual entry
+
+            break;
+        }
 	if (ing_KeyPressed == 'C')
 	{
 		CTOS_KBDBufPut('C');
@@ -7437,7 +7578,8 @@ vdDebug_LogPrintf("V3 display...[%s]",szDisMsg);
              	strcat(szDisMsg, "0"); //szManualEntryFlag 0 is off 1 is on
 			  
               	ing_KeyPressed = 0;
-              	usCARDENTRY(szDisMsg);		
+//              	usCARDENTRY(szDisMsg);	
+                setLCDPrint(3, DISPLAY_POSITION_CENTER, "PLEASE INSERT CARD");	
                 CTOS_Beep();
                 //CTOS_Delay(1500);
                 //CTOS_Beep();
@@ -7528,8 +7670,8 @@ vdDebug_LogPrintf("V3 display...[%s]",szDisMsg);
     				strcat(szDisMsg, "|");
     				strcat(szDisMsg, "0");
     				//usCTOSS_LCDDisplay(szDisMsg);
-    				inKey = usCARDENTRY(szDisMsg);			//Tine:  24Apr2019
-    
+//    				inKey = usCARDENTRY(szDisMsg);			//Tine:  24Apr2019
+                                setLCDPrint(3, DISPLAY_POSITION_CENTER, "PLEASE INSERT CARD");	
     
     				fInsertOnlyDisp = VS_TRUE; //aaronnino mcc v3 gprs fix on issue #0021 Incorrect terminal display upon swiping chip card on idle screen 3 of 3
                     fInsertChipOnly=VS_TRUE;
