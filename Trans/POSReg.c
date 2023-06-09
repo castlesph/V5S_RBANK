@@ -764,15 +764,19 @@ int inLogin(void)
 #if 1
 int inLogout(void)
 {
+        CTOS_LCDTClearDisplay();
+    //vduiClearBelow(2);
+    vdDispTitleString("LOG OUT");
+
 	inTCTRead(1);
 	memset(strTCT.szUserName, 0, sizeof(strTCT.szUserName));
 	strTCT.fRegister=0;
 	inTCTMenuSave(1);
 
-	vdDisplayMessageBox(1, 8, "LOGOUT", "", "", MSG_TYPE_SUCCESS);
-	
+//	vdDisplayMessageBox(1, 8, "LOGOUT", "", "", MSG_TYPE_SUCCESS);
+	setLCDPrint(8, DISPLAY_POSITION_LEFT, "LOGOUT SUCCESS");
 	CTOS_Beep();
-	CTOS_Delay(1000);
+	CTOS_Delay(2000);
 	
 	return d_OK;
 }
