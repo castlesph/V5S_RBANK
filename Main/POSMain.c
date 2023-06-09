@@ -69,14 +69,15 @@ static BYTE stgIdleEvent= 0;
 //powersave
 BOOL fQRECRMenu = 0;
 
-CTOS_VIRTUAL_FUNCTION_KEY_SET_PARA stKeyPara [1] = 
+CTOS_VIRTUAL_FUNCTION_KEY_SET_PARA stKeyPara [4] = 
 {
-    //{0,400, 80, 480},  //F1
-    //{80, 400, 160, 480}, //F2
-    //{160, 400, 240, 480}, //F3
-    //{240, 400, 320, 480} //F4
+//    {0,400, 80, 480},  //F1
+    {50,380, 260, 440},  //F1
+    {0, 0, 0, 0}, //F2
+    {0, 0, 0, 0}, //F3
+    {0, 0, 0, 0} //F4
     
-    {0, 400, 320, 480} //F4
+//    {0, 400, 320, 480} //F4
 };
 
 
@@ -1301,7 +1302,7 @@ int inCTOS_IdleEventProcess(void)
    if(strTCT.inMenuid <= 11)
    {
       strTCT.fRegister=0;
-      strTCT.inMenuid=11; /*need to do registration*/		
+//      strTCT.inMenuid=11; /*need to do registration*/		
       inTCTMenuSave(1);
       inTCTRead(1);
    }
