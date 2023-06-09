@@ -5111,7 +5111,7 @@ int inTCTMenuSave(int inSeekCnt)
 		return 1;
 	}
 	
-    vdDebug_LogPrintf("[inTCTSave]-fDemo[%d]",strTCT.fDemo);
+    vdDebug_LogPrintf("[inTCTSave]-fDemo[%d],strTCT.inMenuid=%d,strTCT.byTerminalType=%d,strTCT.fRegister=%d, user=%s",strTCT.fDemo, strTCT.inMenuid, strTCT.byTerminalType,strTCT.fRegister, strTCT.szUserName);
 	sqlite3_exec( db, "begin", 0, 0, NULL );
 	/* prepare the sql, leave stmt ready for loop */
 	result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);   

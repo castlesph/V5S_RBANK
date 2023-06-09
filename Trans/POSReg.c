@@ -703,25 +703,22 @@ int inLogin(void)
 		strcat(szPassword, "|");
 		strcat(szPassword,strMultiUSR[key-1].szPassword); //key-1
 		memset(szOutput,0,sizeof(szOutput));
-		Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword);
+                CTOS_LCDTClearDisplay();    
+                vdDispTransTitle(srTransRec.byTransType);
+                CTOS_LCDTPrintXY(1, 3, "ENTER PASSWORD:");
+
+                Bret = InputString(1, 4, 0x01, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT);
+		//Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword);
 		vdDebug_LogPrintf("2. SUPER_PW szOutput[%s], Bret[%d]", szOutput, Bret);
 		
 		//CTOS_PrinterPutString(szOutput);
 		//CTOS_PrinterPutString(strTCT.szSuperPW);
 		
-		// Return char 'C' - 67 for decimal -- sidumili
-		if(Bret == 67 || 0 == strcmp(szOutput, "CANCEL"))
-		{
-			 vdDisplayMessageBox(1, 8, "", "USER CANCEL", "", MSG_TYPE_INFO);
-			 CTOS_Beep();
-			 CTOS_Delay(1000);
-			 return d_NO;
-		}
-		
+                if (Bret == 255) //timeout
+                    return Bret;
 		if(d_KBD_CANCEL == Bret)
 			 return Bret;
-		else if(Bret == 255)
-		  return Bret;			
+		
 		else if(strcmp(szOutput, strMultiUSR[key-1].szPassword) == 0)
 		{
 			 //clearLine(7);
@@ -729,13 +726,13 @@ int inLogin(void)
 			 //inDatabase_TerminalOpenDatabase();
 			 //inTCTReadEx(1);
 			 //inDatabase_TerminalCloseDatabase();
-             inTCTRead(1);
-             strTCT.fRegister=1;
+                        inTCTRead(1);
+                        strTCT.fRegister=1;
 			 strcpy(strTCT.szUserName, strMultiUSR[key-1].szUserName);
 			 inTCTMenuSave(1);
 
-			 vdDisplayMessageBox(1, 8, "LOGIN", "", "", MSG_TYPE_SUCCESS);
-			 
+//			 vdDisplayMessageBox(1, 8, "LOGIN", "", "", MSG_TYPE_SUCCESS);
+			 setLCDPrint(8, DISPLAY_POSITION_LEFT, "LOGIN SUCCESS");
 			 CTOS_Beep();
 			 CTOS_Delay(1000);
 			 

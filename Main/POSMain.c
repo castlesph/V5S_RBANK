@@ -1297,7 +1297,15 @@ int inCTOS_IdleEventProcess(void)
         inSetTextMode();
         vdRemoveCard();
     }
-
+    vdDebug_LogPrintf("strTCT.inMenuid[%d]", strTCT.inMenuid);
+   if(strTCT.inMenuid <= 11)
+   {
+      strTCT.fRegister=0;
+      strTCT.inMenuid=11; /*need to do registration*/		
+      inTCTMenuSave(1);
+      inTCTRead(1);
+   }
+    
 		
     CTOS_TimeOutSet(TIMER_ID_4, CTOS_ILDE_TIMER);  //Only IDLE loop use TIMER_ID_4, please don't use this TIMER_ID_4 in other place in application
     vduiKeyboardBackLight(VS_FALSE);
@@ -1539,8 +1547,27 @@ int inCTOS_IdleEventProcess(void)
 
 
                 case d_KBD_0:
-					inF1KeyEvent();
-                    CTOS_LCDTClearDisplay();
+                    
+                        if (strTCT.fRegister == 0) 
+                        {
+                            vdDebug_LogPrintf("inRegister:  START");
+                            //inRetVal = inRegister();
+                            inLogin();
+                            CTOS_LCDTClearDisplay(); 
+                        }
+//                        else if (strTCT.fRegister == 1 && strTCT.inMenuid == 11)
+//                        {
+//                                vdDebug_LogPrintf("inRegister:  START 2");
+//                                inRegister();
+//                                CTOS_LCDTClearDisplay(); 
+//                        } 
+                        else
+                        {
+                                vdDebug_LogPrintf("Txn:  START");
+                       		inF1KeyEvent();
+                                CTOS_LCDTClearDisplay(); 
+                        }
+	
 #if 0
 									/* BDOCLG: Make 0 as function key shortcut only for touch screen terminals - start -- jzg */
 									if((strTCT.byTerminalType % 2) == 0)
@@ -1579,6 +1606,12 @@ int inCTOS_IdleEventProcess(void)
                 case d_KBD_7:
                 case d_KBD_8:
                 case d_KBD_9:
+                    
+                    if(strTCT.fRegister == 0)
+                    {
+                    	vdDisplayErrorMsg(1, 8, "TERMINAL NOT REGISTER");
+                        break;
+                    }
                     vdSetFirstIdleKey(key);
 					//gcitra
                     //inCTOS_SALE();
@@ -1611,6 +1644,12 @@ int inCTOS_IdleEventProcess(void)
         }
         else if ((dwWakeup & d_EVENT_MSR) == d_EVENT_MSR)
         {
+            if(strTCT.fRegister == 0 || strTCT.fIdleSwipeAllow == 0)
+            {
+                CTOS_MSRRead(szTk1Buf, &usTk1Len, szTk2Buf, &usTk2Len, szTk3Buf, &usTk3Len);	//clear buffer on idle swipe on term reg.
+                vdDisplayErrorMsg(1, 8, "TERMINAL NOT REGISTER");
+                continue;
+            }
 //					/* BDO CLG: MOTO setup - start -- jzg */
 //					if (strTCT.fMOTO == 1)
 //						continue;
@@ -1654,8 +1693,17 @@ int inCTOS_IdleEventProcess(void)
         }
         else if (((dwWakeup & d_EVENT_SC) == d_EVENT_SC) || (bySC_status & d_MK_SC_PRESENT))
         {
-					inF1KeyEvent();
-                    CTOS_LCDTClearDisplay();
+            if(strTCT.fRegister == 0)
+            {
+                CTOS_MSRRead(szTk1Buf, &usTk1Len, szTk2Buf, &usTk2Len, szTk3Buf, &usTk3Len);		//clear buffer on idle swipe on term reg.
+                vdDisplayErrorMsg(1, 8, "TERMINAL NOT REGISTER");
+                continue;
+            }
+            if(strTCT.fIdleInsertAllow== 0)
+                continue;
+            
+            inF1KeyEvent();
+            CTOS_LCDTClearDisplay();
 			
             CTOS_LCDTClearDisplay();
             vduiKeyboardBackLight(VS_FALSE);
