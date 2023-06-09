@@ -1695,6 +1695,8 @@ void vduiScreenBackLight(BOOL fTerminalActive)
 /*Display message with image -- sidumili*/
 void vdDisplayMessageBox(int inColumn, int inRow,  char *msg, char *msg2, char *msg3, int msgType)
 {
+        CTOS_LCDTPrintAligned(8,"                          ", d_LCD_ALIGNLEFT);	  
+    CTOS_LCDTPrintAligned(8,msg, DISPLAY_POSITION_LEFT);   
 }
 
 void vdDisplayMessageStatusBox(int inColumn, int inRow,  char *msg, char *msg2, int msgType)

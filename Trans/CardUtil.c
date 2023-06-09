@@ -21,58 +21,36 @@
 
 void vdRemoveCard(void)
 {
-	BYTE bySC_status;
-	int inRowtmp,inRow=8;
-	BYTE szTitle[25+1];
-	BYTE szDisMsg[25];
-	BOOL fDisplayBox = FALSE; //sidumili: variable to display box once and avoid flicker
-	
-          #if 0
-	CTOS_LCDTClearDisplay();
-		  
-	if ((strTCT.byTerminalType % 2) == 0)
-		inRowtmp = V3_ERROR_LINE_ROW;
-	else
-		inRowtmp = inRow;
-          #endif
-	//memset(szDisMsg, 0x00, sizeof(szDisMsg));
-	//memset(szTitle, 0x00, sizeof(szTitle));
-	//szGetTransTitle(srTransRec.byTransType, szTitle);
-	
-	while(1)
+    BYTE bySC_status;
+
+	#ifdef APP_AUTO_TEST
+	if (inCTOS_GetAutoTestCnt() > 1)
 	{
-		CTOS_SCStatus(d_SC_USER, &bySC_status);
-		if(bySC_status & d_MK_SC_PRESENT)
-		{
-                        //clearLine(inRowtmp);
-                        //CTOS_LCDTPrintXY(1,inRowtmp,"PLEASE REMOVE CARD");
-                        vdDebug_LogPrintf("AAA - REMOVE CARD");
-
-						if (!fDisplayBox)
-						{
-							memset(szDisMsg, 0x00, sizeof(szDisMsg));
-	                        memset(szTitle, 0x00, sizeof(szTitle));
-	                        szGetTransTitle(srTransRec.byTransType, szTitle);
-	                        memset(szDisMsg, 0x00, sizeof(szDisMsg));
-	                        strcpy(szDisMsg, szTitle);
-	                        strcat(szDisMsg, "|");
-	                        strcat(szDisMsg, "PLEASE REMOVE CARD");
-	                        //usCTOSS_LCDDisplay(szDisMsg);            //Tine:  24Apr2019
-	                        vdDisplayMessageBox(1, 8, "", "PLEASE REMOVE CARD", "", MSG_TYPE_WARNING);
-
-							fDisplayBox = TRUE;
-						}
-                        
-                        
-                        CTOS_Beep();
-                        CTOS_Delay(300);
-                        CTOS_Beep();
-                        continue;
-		}	
-		break;
+		vdDebug_LogPrintf("Auto Test ---> Remove card");
+		vduiDisplayStringCenter(V3_STATUS_LINE_ROW,"REMOVE CARD");
+		CTOS_Delay(2000);
+		return;
 	}
-	//clearLine(inRowtmp);
-
+    #endif
+	
+    while(1)
+    {
+            
+        CTOS_SCStatus(d_SC_USER, &bySC_status);
+        if(bySC_status & d_MK_SC_PRESENT)
+        {
+			if ((strTCT.byTerminalType%2) == 0)
+				vduiDisplayStringCenter(V3_STATUS_LINE_ROW,"PLS REMOVE CARD");
+			else
+	            vduiDisplayStringCenter(7,"PLS REMOVE CARD");
+            CTOS_Beep();
+            CTOS_Delay(300);
+            CTOS_Beep();
+            continue;
+        }
+        
+        break;
+    }
 }
 
 

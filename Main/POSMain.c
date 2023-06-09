@@ -1654,37 +1654,8 @@ int inCTOS_IdleEventProcess(void)
         }
         else if (((dwWakeup & d_EVENT_SC) == d_EVENT_SC) || (bySC_status & d_MK_SC_PRESENT))
         {
-			/* BDO CLG: MOTO setup - start -- jzg */
-//			if (strTCT.fMOTO == 1)
-//				continue;
-			/* BDO CLG: MOTO setup - end -- jzg */
-				
-            //Open the Back Light in the LCD Display //
-            vduiKeyboardBackLight(VS_TRUE);
-			vduiScreenBackLight(VS_TRUE);
-            vduiLightOn();
-            vdCTOS_SetTransEntryMode(CARD_ENTRY_ICC);
-            
-			//gcitra
-			//inCTOS_SALE();
-			//issue:218
-			fEntryCardfromIDLE = TRUE;
-			fIdleInsert = TRUE;
-			//issue:218
-#if 0
-			inRet=inCTOS_SelectCurrencyfromIDLE();
-			if(d_OK != inRet)
-			{
-				CTOS_LCDTClearDisplay();
-				vdRemoveCard();
-				continue;
-			}	
-#endif			
-//			if (strTCT.fDefaultCashAdvance == 1)
-//				inCTOS_CASH_ADVANCE();
-//			else
-				inCTOS_WAVE_SALE();
-			//gcitra
+					inF1KeyEvent();
+                    CTOS_LCDTClearDisplay();
 			
             CTOS_LCDTClearDisplay();
             vduiKeyboardBackLight(VS_FALSE);
