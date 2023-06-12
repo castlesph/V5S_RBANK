@@ -13003,3 +13003,430 @@ vdDebug_LogPrintf("::inGetIdleTimeOut inTimeOut[%d]", inTimeOut);
 return(inTimeOut);
 
 }
+
+
+void vdCTOS_ConfigureDialUpComm(void)
+{
+	BYTE bRet,strOut[30],strtemp[17],key;
+	BYTE szInputBuf[24+1];
+	BYTE szIntComBuf[2];
+	BYTE szPhNoBuf[9];
+	BYTE szExtNoBuf[4];
+	int inResult;
+	USHORT ret;
+	USHORT usLen;
+	int shHostIndex = 1;
+	BYTE	szPabx[4+1] = {0};
+	BYTE	szPriTxnPhoneNumber[30] = {0};
+	BYTE	szSecTxnPhoneNumber[30] = {0};
+	BYTE	szPriSettlePhoneNumber[30] = {0};
+	BYTE	szSecSettlePhoneNumber[30] = {0};
+	BYTE	szTemp[d_LINE_SIZE + 1] = {0};
+	int iAnswer = 0;
+
+	vdDebug_LogPrintf("--vdCTOS_ConfigureDialUpComm--");
+	
+	inResult = inTCTRead(1);
+	if (inResult != d_OK)
+		return;
+	
+	CTOS_LCDTClearDisplay();
+	vdDispTitleString("CONFIGURE DIALUP");
+	
+	while(1)
+	{
+		vduiClearBelow(3);
+		setLCDPrint(3, DISPLAY_POSITION_LEFT, "PRIMARY PABX");
+		
+		strcpy(strtemp,"New:") ; 
+		CTOS_LCDTPrintXY(1, 7, strtemp);
+		memset(strOut,0x00, sizeof(strOut));
+		memset(strtemp, 0x00, sizeof(strtemp));
+		usLen = 10;
+		ret = InputString(1, 8, 0x00, 0x02, strOut, &usLen, 0, d_INPUT_TIMEOUT);
+		if(ret==d_KBD_ENTER)
+		{
+				if(strlen(strOut)>0)
+				{
+					memcpy(szPabx,strOut,strlen(strOut));
+					szPabx[strlen(strOut)]=',';
+					szPabx[strlen(strOut)+1]=0;
+					break;
+				}
+				else
+				{
+					vduiClearBelow(4);
+					vduiDisplayStringCenter(5,"NO PABX VALUE");
+					vduiDisplayStringCenter(6,"ENTERED,DISABLE");
+					vduiDisplayStringCenter(7,"PABX?");
+					vduiDisplayStringCenter(8,"NO[X] YES[OK]");
+					key=struiGetchWithTimeOut();
+					if(key==d_KBD_ENTER)
+					{
+						memset(szPabx,0,sizeof(szPabx));
+						break;
+					}
+				}
+		}
+			if(ret == d_KBD_CANCEL)
+				break;
+		}
+		
+		while(1)
+		{
+			vduiClearBelow(3);
+			setLCDPrint(3, DISPLAY_POSITION_LEFT, "PRIMARY LINE");
+
+			strcpy(strtemp,"New:") ; 
+			CTOS_LCDTPrintXY(1, 7, strtemp);
+			memset(strOut,0x00, sizeof(strOut));
+			usLen = 18;
+			ret = InputString(1, 8, 0x00, 0x02, strOut, &usLen, 1, d_INPUT_TIMEOUT);
+			if (ret == d_KBD_CANCEL )
+				break;
+			else if(0 == ret )
+				break;
+			else if(ret>= 1)
+			{
+				memcpy(szPriTxnPhoneNumber,strOut,strlen(strOut));
+				szPriTxnPhoneNumber[strlen(strOut)]=0;
+				break;
+			}
+			if(ret == d_KBD_CANCEL)
+				break;
+
+		}
+			
+		while(1)
+		{
+			vduiClearBelow(3);
+			setLCDPrint(3, DISPLAY_POSITION_LEFT, "SECONDARY LINE");
+			
+			strcpy(strtemp,"New:") ; 
+			CTOS_LCDTPrintXY(1, 7, strtemp);
+			memset(strOut,0x00, sizeof(strOut));
+			usLen = 18;
+			ret = InputString(1, 8, 0x00, 0x02, strOut, &usLen, 1, d_INPUT_TIMEOUT);
+			if (ret == d_KBD_CANCEL )
+				break;
+			else if(0 == ret )
+				break;
+			else if(ret>= 1)
+			{
+				memcpy(szSecTxnPhoneNumber,strOut,strlen(strOut));
+				szSecTxnPhoneNumber[strlen(strOut)]=0;
+				break;
+			}
+			if(ret == d_KBD_CANCEL)
+				break;
+
+		}
+			
+		while(1)
+		{
+			vduiClearBelow(3);
+			setLCDPrint(3, DISPLAY_POSITION_LEFT, "SETTLEMENT PRI LINE");
+			
+			strcpy(strtemp,"New:") ; 
+			CTOS_LCDTPrintXY(1, 7, strtemp);
+			memset(strOut,0x00, sizeof(strOut));
+			usLen = 18;
+			ret = InputString(1, 8, 0x00, 0x02, strOut, &usLen, 1, d_INPUT_TIMEOUT);
+			if (ret == d_KBD_CANCEL )
+				break;
+			else if(0 == ret )
+				break;
+			else if(ret>= 1)
+			{
+				memcpy(szPriSettlePhoneNumber,strOut,strlen(strOut));
+				szPriSettlePhoneNumber[strlen(strOut)]=0;
+				break;
+			}
+			if(ret == d_KBD_CANCEL)
+				break;
+
+		}
+			
+		while(1)
+		{
+			vduiClearBelow(3);
+			setLCDPrint(3, DISPLAY_POSITION_LEFT, "SETTLEMENT SEC LINE");
+			
+			strcpy(strtemp,"New:") ; 
+			CTOS_LCDTPrintXY(1, 7, strtemp);
+			memset(strOut,0x00, sizeof(strOut));
+			usLen = 18;
+			ret = InputString(1, 8, 0x00, 0x02, strOut, &usLen, 1, d_INPUT_TIMEOUT);
+			if (ret == d_KBD_CANCEL )
+				break;
+			else if(0 == ret )
+				break;
+			else if(ret>= 1)
+			{
+				memcpy(szSecSettlePhoneNumber,strOut,strlen(strOut));
+				szSecSettlePhoneNumber[strlen(strOut)]=0;
+				break;
+			}
+			if(ret == d_KBD_CANCEL)
+				break;
+
+		}
+
+		// Confirmation
+		CTOS_LCDTClearDisplay();
+		vdDispTitleString("CONFIGURE DIALUP");
+	
+		memset(szTemp, 0x00, sizeof(szTemp));
+		if (wub_strlen(szPabx)<=0)
+			sprintf(szTemp, "PABX:%s", "[DISABLED]");
+		else
+			sprintf(szTemp, "PABX:%s", szPabx);
+		
+		CTOS_LCDTPrintAligned(2, szTemp, d_LCD_ALIGNLEFT);
+
+		memset(szTemp, 0x00, sizeof(szTemp));
+		if (wub_strlen(szPriTxnPhoneNumber)<=0)
+			sprintf(szTemp, "PRI LINE:%s", "[NO VALUE]");
+		else
+			sprintf(szTemp, "PRI LINE:%s", szPriTxnPhoneNumber);
+		
+		CTOS_LCDTPrintAligned(3, szTemp, d_LCD_ALIGNLEFT);
+
+		memset(szTemp, 0x00, sizeof(szTemp));
+		if (wub_strlen(szSecTxnPhoneNumber)<=0)
+			sprintf(szTemp, "SEC LINE:%s", "[NO VALUE]");
+		else
+			sprintf(szTemp, "SEC LINE:%s", szSecTxnPhoneNumber);
+		
+		CTOS_LCDTPrintAligned(4, szTemp, d_LCD_ALIGNLEFT);
+
+		memset(szTemp, 0x00, sizeof(szTemp));
+		if (wub_strlen(szPriSettlePhoneNumber)<=0)
+			sprintf(szTemp, "SET PRI LINE:%s", "[NO VALUE]");
+		else
+			sprintf(szTemp, "SET PRI LINE:%s", szPriSettlePhoneNumber);
+		
+		CTOS_LCDTPrintAligned(5, szTemp, d_LCD_ALIGNLEFT);
+
+		memset(szTemp, 0x00, sizeof(szTemp));
+		if (wub_strlen(szSecSettlePhoneNumber)<=0)
+			sprintf(szTemp, "SET SEC LINE:%s", "[NO VALUE]");
+		else
+			sprintf(szTemp, "SET SEC LINE:%s", szSecSettlePhoneNumber);
+		
+		CTOS_LCDTPrintAligned(6, szTemp, d_LCD_ALIGNLEFT);
+
+		setLCDPrint27(7,DISPLAY_POSITION_LEFT,"APPLY TO ALL?");
+		while (1)
+		{
+			iAnswer = inSelectedAnswer(8);
+
+			if (iAnswer == -1) // Cancel
+			{
+				CTOS_LCDTClearDisplay();
+				vdDisplayErrorMsg(1, 8, "USER CANCEL");
+				break;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (wub_strlen(szPabx)<=0)
+			strcpy(szPabx, ",");
+
+		if (wub_strlen(szPriTxnPhoneNumber)<=0)
+			strcpy(szPriTxnPhoneNumber, "0");
+
+		if (wub_strlen(szSecTxnPhoneNumber)<=0)
+			strcpy(szSecTxnPhoneNumber, "0");
+
+		if (wub_strlen(szPriSettlePhoneNumber)<=0)
+			strcpy(szPriSettlePhoneNumber, "0");
+
+		if (wub_strlen(szSecSettlePhoneNumber)<=0)
+			strcpy(szSecSettlePhoneNumber, "0");
+
+		strcpy(strTCT.szPabx, szPabx);
+		
+		vdDebug_LogPrintf("szPabx=[%s]", szPabx);
+		vdDebug_LogPrintf("szPriTxnPhoneNumber=[%s]", szPriTxnPhoneNumber);
+		vdDebug_LogPrintf("szSecTxnPhoneNumber=[%s]", szSecTxnPhoneNumber);
+		vdDebug_LogPrintf("szPriSettlePhoneNumber=[%s]", szPriSettlePhoneNumber);
+		vdDebug_LogPrintf("szSecSettlePhoneNumber=[%s]", szSecSettlePhoneNumber);
+
+		vduiClearBelow(2);
+		CTOS_LCDTPrintXY(1, 7, "Configuring DialUp");
+		CTOS_LCDTPrintXY(1, 8, "Please wait...");
+			
+		if (iAnswer == 0) // Yes (Configure all)
+		{			
+			inTCTSave(1); // Save PaBx			
+			inCPT_UpdatePhoneNo(szPriTxnPhoneNumber, szSecTxnPhoneNumber, szPriSettlePhoneNumber, szSecSettlePhoneNumber); // Update CPT
+			inFXT_UpdatePhoneNo(szPriTxnPhoneNumber, szSecTxnPhoneNumber, szPriSettlePhoneNumber, szSecSettlePhoneNumber); // Update FXT
+		}
+
+		if (iAnswer == 1) // No (Configure by host)
+		{
+			shHostIndex = inCTOS_SelectHostSetting();
+			vdDebug_LogPrintf("shHostIndex=[%d]", shHostIndex);
+			inCPTRead(shHostIndex);
+			if (shHostIndex == -1)
+			{
+				CTOS_LCDTClearDisplay();
+				vdDisplayErrorMsg(1, 8, "USER CANCEL");
+				return;
+			}
+
+			inTCTSave(1); // Save PaBx
+
+			strcpy(strCPT.szPriTxnPhoneNumber, szPriTxnPhoneNumber);
+			strcpy(strCPT.szSecTxnPhoneNumber, szSecTxnPhoneNumber);
+			strcpy(strCPT.szPriSettlePhoneNumber, szPriSettlePhoneNumber);
+			strcpy(strCPT.szSecSettlePhoneNumber, szSecSettlePhoneNumber);
+		
+			inCPTSave(shHostIndex);
+			vduiClearBelow(2);
+			
+		}
+
+		CTOS_LCDTPrintXY(1, 7, "Configuring DialUp");
+		CTOS_LCDTPrintXY(1, 8, "Done!			 ");
+		CTOS_Beep();
+		CTOS_Delay(500);
+}
+
+
+int inSelectedAnswer(int inLine)
+{
+	BOOL isKey;
+	unsigned char c;
+	
+	setLCDPrint27(inLine,DISPLAY_POSITION_CENTER,"YES[OK]NO[<-]CNCL[X]");
+	
+	while(1)
+	{
+		
+		while(1)
+	    {
+	        CTOS_KBDInKey(&isKey);
+	        if (isKey){ 
+	            vduiLightOn();
+
+	            CTOS_KBDGet(&c);
+				break;
+	        }	        
+	    }
+
+		if (c==d_KBD_ENTER)
+			return 0;
+		else if (c == d_KBD_CLEAR)
+			return 1;
+	    else if (c==d_KBD_CANCEL)
+		    return -1;
+		
+	}	
+}
+
+void vdSetIPHeader(void)
+{
+	BYTE bRet,strOut[30],strtemp[17],key;
+	BYTE szInputBuf[24+1];
+	BYTE szIntComBuf[2];
+	BYTE szPhNoBuf[9];
+	BYTE szExtNoBuf[4];
+	BYTE szTemp[24+1];
+	int inResult;
+	USHORT ret;
+	USHORT usLen;
+	int shHostIndex = 1;
+	int iIPHeader = 0;	
+	int iAnswer = 0;
+
+	vdDebug_LogPrintf("--vdSetIPHeader--");
+	
+	CTOS_LCDTClearDisplay();
+	vdDispTitleString("SET IP HEADER");
+		
+	while(1)
+	{
+		vduiClearBelow(3);
+		setLCDPrint(3, DISPLAY_POSITION_LEFT, "IP HEADER");
+		
+		strcpy(strtemp,"New:") ; 
+		CTOS_LCDTPrintXY(1, 7, strtemp);
+		memset(strOut,0x00, sizeof(strOut));
+		usLen = 18;
+		ret = InputString(1, 8, 0x00, 0x02, strOut, &usLen, 1, d_INPUT_TIMEOUT);
+		if (ret == d_KBD_CANCEL )
+			break;
+		else if(0 == ret )
+			break;
+		else if(ret>= 1)
+		{
+			iIPHeader = atoi(strOut);
+			
+			break;
+		}
+		if(ret == d_KBD_CANCEL)
+			break;
+
+	}
+
+		// Confirmation
+		CTOS_LCDTClearDisplay();
+		vdDispTitleString("SET IP HEADER");
+	
+		memset(szTemp, 0x00, sizeof(szTemp));
+		sprintf(szTemp, "IP HEADER:%d", iIPHeader);		
+		CTOS_LCDTPrintAligned(3, szTemp, d_LCD_ALIGNLEFT);
+
+		setLCDPrint27(7,DISPLAY_POSITION_LEFT,"APPLY TO ALL?");
+		while (1)
+		{
+			iAnswer = inSelectedAnswer(8);
+
+			if (iAnswer == -1) // Cancel
+			{
+				CTOS_LCDTClearDisplay();
+				vdDisplayErrorMsg(1, 8, "USER CANCEL");
+				break;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		vduiClearBelow(2);
+		CTOS_LCDTPrintXY(1, 7, "Configuring IPHeader");
+		CTOS_LCDTPrintXY(1, 8, "Please wait...");
+			
+		if (iAnswer == 0) // Yes (Configure all)
+		{						
+			inCPT_UpdateIPHeader(TRUE, iIPHeader, 1);
+		}
+
+		if (iAnswer == 1) // No (Configure by host)
+		{
+			shHostIndex = inCTOS_SelectHostSetting();
+			vdDebug_LogPrintf("shHostIndex=[%d]", shHostIndex);
+			inCPTRead(shHostIndex);
+			if (shHostIndex == -1)
+			{
+				CTOS_LCDTClearDisplay();
+				vdDisplayErrorMsg(1, 8, "USER CANCEL");
+				return;
+			}
+
+			inCPT_UpdateIPHeader(FALSE, iIPHeader, shHostIndex);
+			vduiClearBelow(2);
+			
+		}
+
+		CTOS_LCDTPrintXY(1, 7, "Configuring IPHeader");
+		CTOS_LCDTPrintXY(1, 8, "Done!			 ");
+		CTOS_Beep();
+		CTOS_Delay(500);
+}

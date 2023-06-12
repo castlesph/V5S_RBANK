@@ -2478,7 +2478,7 @@ BOOL fERM_ChkInitialize(void)
 BOOL fERM_ChkFuncAvailable(BOOL fPrintReport)
 {
 	BOOL fAvailable = TRUE;
-
+vdDebug_LogPrintf("fPrintReport[%d],strTCT.byERMMode=%d", fPrintReport, strTCT.byERMMode);
 	if (fPrintReport == TRUE)
 	{
 		if (isCheckTerminalMP200() == d_OK)
@@ -2497,7 +2497,7 @@ BOOL fERM_ChkFuncAvailable(BOOL fPrintReport)
 		CTOS_Beep();
 		CTOS_Delay(2000); 
 	}
-	
+	vdDebug_LogPrintf("fERM_ChkFuncAvailable[%d]", fAvailable);
 	return(fAvailable);
 }
 

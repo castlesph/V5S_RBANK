@@ -72,7 +72,7 @@
 extern TRANS_DATA_TABLE* srGetISOEngTransDataAddress(void);
 
 #define MAXFUNCTIONS 		2048
-
+extern void vdCTOS_FunctionKeyEx(void);
 // can declare any functions type and link with string.
 Func_vdFunc stFunctionList_vdFunc[] = {
 	{"inCTOS_SALE_OFFLINE", inCTOS_SALE_OFFLINE},
@@ -126,7 +126,8 @@ Func_vdFunc stFunctionList_vdFunc[] = {
 	{"inCTOS_SALE", (DMENU_FUN)inCTOS_SALE},	
     {"vdCTOS_PrintCRC", (DMENU_FUN)vdCTOS_PrintCRC},
 	{"vdCTOS_HostInfo", (DMENU_FUN)vdCTOS_HostInfo},
-    {"vdCTOS_FunctionKey", (DMENU_FUN)vdCTOS_FunctionKey},
+//    {"vdCTOS_FunctionKey", (DMENU_FUN)vdCTOS_FunctionKey},
+        {"vdCTOS_FunctionKey", (DMENU_FUN)vdCTOS_FunctionKeyEx},
 	{"inCTOS_INSTALLMENT", (DMENU_FUN)inCTOS_INSTALLMENT},	
 	{"inCTOS_CASH2GO", (DMENU_FUN)inCTOS_CASH2GO},		
     {"inCTOS_DebitSelection", (DMENU_FUN)inCTOS_DebitSelection},	

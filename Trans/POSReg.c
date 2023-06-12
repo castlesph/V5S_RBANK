@@ -944,6 +944,7 @@ int inEnterAdminPassword(void)
 	short shMinLen;
 	short shMaxLen; //#00228 - PASSWORD and SUPER PASSWORD should limit to 4 digit entry//12;
     char szMsg[100];
+    int retry  = 0;
 	
     memset(szUserName, 0x00, sizeof(szUserName));
     //memset(szTerm, 0x00, sizeof(szTerm));
@@ -978,45 +979,36 @@ int inEnterAdminPassword(void)
     strcpy(szPassword,szMsg);
     strcat(szPassword, "|");
     strcat(szPassword,strMultiUSR[0].szPassword); //key-1
-    memset(szOutput,0,sizeof(szOutput));
-    Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword);
-    vdDebug_LogPrintf("2. SUPER_PW szOutput[%s], Bret[%d]", szOutput, Bret);
-    
-    if(Bret == 67 || 0 == strcmp(szOutput, "CANCEL"))
+    do 
     {
-        vdDisplayMessageBox(1, 8, "", "USER CANCEL", "", MSG_TYPE_INFO);
-        CTOS_Beep();
-        CTOS_Delay(1000);
-        return d_NO;
-    }
-		
-    if(d_KBD_CANCEL == Bret)
-        return Bret;
-    else if(Bret == 255)
-        return Bret;			
-    else if(strcmp(szOutput, strMultiUSR[0].szPassword) == 0)
-    {
-        //clearLine(7);
-        //clearLine(8);
-        //inDatabase_TerminalOpenDatabase();
-        //inTCTReadEx(1);
-        //inDatabase_TerminalCloseDatabase();
-        //inTCTRead(1);
-        //strTCT.fRegister=1;
-        //strcpy(strTCT.szUserName, strMultiUSR[0].szUserName);
-        //inTCTMenuSave(1);
+        CTOS_LCDTClearDisplay();
+        vdDispTransTitle(srTransRec.byTransType);
+        CTOS_LCDTPrintXY(1, 3, "ENTER PASSWORD:");
+                
+          memset(szOutput,0,sizeof(szOutput));
+    //    Bret = InputStringUI(0x02, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT, szPassword);
+        Bret = InputString(1, 4, 0x01, 0x02, szOutput, &shMaxLen, shMinLen, d_INPUT_TIMEOUT);
+        vdDebug_LogPrintf("2. SUPER_PW szOutput[%s], Bret[%d],strMultiUSR[0].szPassword=%s", szOutput, Bret, strMultiUSR[0].szPassword);
+        if (Bret == d_KBD_CANCEL) {
+            CTOS_LCDTClearDisplay();
+            vdSetErrorMessage("USER CANCEL");
+
+            return (-1);
+        }
+        if (Bret == 255) //timeout
+          return -2;
         
-        //vdDisplayMessageBox(1, 8, "password correct", "", "", MSG_TYPE_SUCCESS);
-        
-        CTOS_Beep();
-        CTOS_Delay(1000);
-        
-        return d_OK;
-    }
-    else
-    {
-        vdDisplayErrorMsg(1, 8, "INVALID PASSWORD");
-    }
+        if (strcmp(szOutput, strMultiUSR[0].szPassword) == 0) 
+        {
+             return d_OK;
+        }   			
+        else
+        {
+            vdDisplayErrorMsg(1, 8, "INVALID PASSWORD");
+        }  
+        retry++;
+    } while (retry < 3);
+
      
     CTOS_LCDTClearDisplay();
     

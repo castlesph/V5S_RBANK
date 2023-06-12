@@ -1586,14 +1586,6 @@ int inCTOS_GeneralGetInvoice(void)
     int  inResult;
     char szBcd[INVOICE_BCD_SIZE+1];
 
-    BYTE szTitle[25+1];
-    BYTE szDisplay[100];
-    BYTE szDisMsg[100];
-
-
-    memset(szTitle, 0x00, sizeof(szTitle));
-	szGetTransTitle(srTransRec.byTransType, szTitle);
-
     if (inMultiAP_CheckSubAPStatus() == d_OK)
     {
         return d_OK;
@@ -1602,43 +1594,23 @@ int inCTOS_GeneralGetInvoice(void)
     memset(szInvNoAsc, 0x00, sizeof(szInvNoAsc));
     memset(szInvNoBcd, 0x00, sizeof(szInvNoBcd));
     
-    //CTOS_LCDTClearDisplay();
-    //vdDispTransTitle(srTransRec.byTransType);
+    CTOS_LCDTClearDisplay();
+    vdDispTransTitle(srTransRec.byTransType);
     //vdClearNonTitleLines();
     //setLCDPrint(5, DISPLAY_POSITION_LEFT, "TRACE NO.: ");
-    //CTOS_LCDTPrintXY(1, 5, "TRACE NO.: ");
-
-    strcpy(szDisplay, "1");
-	strcat(szDisplay, "|");
-    strcat(szDisplay, "6");
-	strcat(szDisplay, "|");
-    strcat(szDisplay, szTitle);
-    strcat(szDisplay, "|");
-   if (srTransRec.byTransType== REPRINT_ANY)
-         strcat(szDisplay, "TRACE/INVOICE NO:");
-   else
-   	strcat(szDisplay, "TRACE NO:");
+    CTOS_LCDTPrintXY(1, 5, "TRACE NO.: ");
 	
     while(TRUE)
     {
         usInvoiceLen = 6;
         vdDebug_LogPrintf("11bRet[%d]atoi(szInvNoAsc)=[%d]usInvoiceLen[%d]",bRet,atoi(szInvNoAsc),usInvoiceLen);
         //bRet = InputString(usX, usY, 0x00, bShowAttr, szInvNoAsc, &usInvoiceLen, 1, d_GETPIN_TIMEOUT);
-        //bRet = InputString2(usX, usY, 0x00, bShowAttr, szInvNoAsc, &usInvoiceLen, 1, d_GETPIN_TIMEOUT);
-        
-		//bRet = InputStringUI(0x01, 0x02, szInvNoAsc, &usInvoiceLen, 1, d_GETPIN_TIMEOUT,"", "ENTER INVOICE NO.");
-		bRet = InputStringUI(0x01, 0x02, szInvNoAsc, &usInvoiceLen, 1, d_GETPIN_TIMEOUT, szDisplay);
-		
+        bRet = InputString2(usX, usY, 0x00, bShowAttr, szInvNoAsc, &usInvoiceLen, 1, d_GETPIN_TIMEOUT);
         vdDebug_LogPrintf("bRet[%d]atoi(szInvNoAsc)=[%d]usInvoiceLen[%d]",bRet,atoi(szInvNoAsc),usInvoiceLen);
         if (bRet == d_KBD_CANCEL )
         {
-            //memset(szDisMsg, 0x00, sizeof(szDisMsg));
-            //strcpy(szDisMsg, szTitle);
-            //strcat(szDisMsg, "|");
-            //strcat(szDisMsg, "USER CANCEL");
-            //usCTOSS_LCDDisplay(szDisMsg);
-            CTOS_Beep();
-            CTOS_Delay(1500);
+            CTOS_LCDTClearDisplay();    
+            vdSetErrorMessage("USER CANCEL");
             return (d_EDM_USER_CANCEL);
         }
         
@@ -1657,7 +1629,6 @@ int inCTOS_GeneralGetInvoice(void)
 
     return ST_SUCCESS;
 }
-
 
 int inCTOS_BatchSearch(void)
 {

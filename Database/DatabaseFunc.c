@@ -13479,3 +13479,129 @@ int inMMTReadSelectedData(int inSeekCnt)
 }
 
 
+
+int inCPT_UpdateIPHeader(BOOL fAll, int inIPHeader, int inSeekCnt)
+{
+	int result;
+    char *sql1 = "UPDATE CPT SET inIPHeader = ? WHERE HDTid = ?";
+	char *sql2 = "UPDATE CPT SET inIPHeader = ? WHERE fIpUpdate = ?";
+		
+    /* open the database */
+    result = sqlite3_open(DB_TERMINAL,&db);
+    if (result != SQLITE_OK) {
+    	sqlite3_close(db);
+        return 1;
+    }
+               
+    sqlite3_exec( db, "begin", 0, 0, NULL );
+    /* prepare the sql, leave stmt ready for loop */
+
+	if (fAll)
+		result = sqlite3_prepare_v2(db, sql2, -1, &stmt, NULL);
+	else
+    	result = sqlite3_prepare_v2(db, sql1, -1, &stmt, NULL);
+	
+    if (result != SQLITE_OK) {
+    	sqlite3_close(db);
+        return 2;
+    }
+ 
+    inStmtSeq = 0;
+    result = sqlite3_bind_int(stmt, inStmtSeq +=1, inIPHeader);
+
+	result = sqlite3_bind_int(stmt, inStmtSeq +=1, inSeekCnt);
+               
+    result = sqlite3_step(stmt);
+    if( result != SQLITE_DONE ){
+        sqlite3_close(db);
+        return 3;
+    }
+   
+    sqlite3_exec(db,"commit;",NULL,NULL,NULL);
+ 
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+ 
+    return(ST_SUCCESS);
+}
+
+int inCPT_UpdatePhoneNo(char *szPriTxnPhoneNumber, char *szSecTxnPhoneNumber, char *szPriSettlePhoneNumber, char *szSecSettlePhoneNumber)
+{
+	int result;
+    char *sql = "UPDATE CPT SET szPriTxnPhoneNumber = ?, szSecTxnPhoneNumber = ?, szPriSettlePhoneNumber = ?, szSecSettlePhoneNumber = ?";
+               
+    /* open the database */
+    result = sqlite3_open(DB_TERMINAL,&db);
+    if (result != SQLITE_OK) {
+    	sqlite3_close(db);
+        return 1;
+    }
+               
+    sqlite3_exec( db, "begin", 0, 0, NULL );
+    /* prepare the sql, leave stmt ready for loop */
+    result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (result != SQLITE_OK) {
+    	sqlite3_close(db);
+        return 2;
+    }
+ 
+    inStmtSeq = 0;
+	result = sqlite3_bind_text(stmt, inStmtSeq +=1, (char*)szPriTxnPhoneNumber, strlen((char*)szPriTxnPhoneNumber), SQLITE_STATIC);
+	result = sqlite3_bind_text(stmt, inStmtSeq +=1, (char*)szSecTxnPhoneNumber, strlen((char*)szSecTxnPhoneNumber), SQLITE_STATIC);
+	result = sqlite3_bind_text(stmt, inStmtSeq +=1, (char*)szPriSettlePhoneNumber, strlen((char*)szPriSettlePhoneNumber), SQLITE_STATIC);
+	result = sqlite3_bind_text(stmt, inStmtSeq +=1, (char*)szSecSettlePhoneNumber, strlen((char*)szSecSettlePhoneNumber), SQLITE_STATIC);	
+               
+    result = sqlite3_step(stmt);
+    if( result != SQLITE_DONE ){
+        sqlite3_close(db);
+        return 3;
+    }
+   
+    sqlite3_exec(db,"commit;",NULL,NULL,NULL);
+ 
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+ 
+    return(ST_SUCCESS);
+}
+
+
+int inFXT_UpdatePhoneNo(char *szPriTxnPhoneNumber, char *szSecTxnPhoneNumber, char *szPriSettlePhoneNumber, char *szSecSettlePhoneNumber)
+{
+	int result;
+    char *sql = "UPDATE FXT SET szPriTxnPhoneNumber = ?, szSecTxnPhoneNumber = ?, szPriSettlePhoneNumber = ?, szSecSettlePhoneNumber = ?";
+               
+    /* open the database */
+    result = sqlite3_open(DB_TERMINAL,&db);
+    if (result != SQLITE_OK) {
+    	sqlite3_close(db);
+        return 1;
+    }
+               
+    sqlite3_exec( db, "begin", 0, 0, NULL );
+    /* prepare the sql, leave stmt ready for loop */
+    result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (result != SQLITE_OK) {
+    	sqlite3_close(db);
+        return 2;
+    }
+ 
+    inStmtSeq = 0;
+	result = sqlite3_bind_text(stmt, inStmtSeq +=1, (char*)szPriTxnPhoneNumber, strlen((char*)szPriTxnPhoneNumber), SQLITE_STATIC);
+	result = sqlite3_bind_text(stmt, inStmtSeq +=1, (char*)szSecTxnPhoneNumber, strlen((char*)szSecTxnPhoneNumber), SQLITE_STATIC);
+	result = sqlite3_bind_text(stmt, inStmtSeq +=1, (char*)szPriSettlePhoneNumber, strlen((char*)szPriSettlePhoneNumber), SQLITE_STATIC);
+	result = sqlite3_bind_text(stmt, inStmtSeq +=1, (char*)szSecSettlePhoneNumber, strlen((char*)szSecSettlePhoneNumber), SQLITE_STATIC);	
+               
+    result = sqlite3_step(stmt);
+    if( result != SQLITE_DONE ){
+        sqlite3_close(db);
+        return 3;
+    }
+   
+    sqlite3_exec(db,"commit;",NULL,NULL,NULL);
+ 
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+ 
+    return(ST_SUCCESS);
+}

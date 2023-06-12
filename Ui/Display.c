@@ -1737,20 +1737,94 @@ int vdDisplayTrxn(int inSaleType, char *sztrxlogo)
 
 BYTE InputStringUI(BYTE bInputMode,  BYTE bShowAttr, BYTE *pbaStr, USHORT *usStrLen, USHORT usMinLen, USHORT usTimeOutMS, BYTE *szInput)
 {
-     
+    int Bret = 0;
+    int shMaxLen = 20;    
+    Bret = InputString(1, 4, 0x01, 0x02, pbaStr, &shMaxLen, usMinLen, d_INPUT_TIMEOUT);
+    vdDebug_LogPrintf("InputStringUI pbaStr[%s], Bret[%d]", pbaStr, Bret);
+    if (Bret == d_KBD_CANCEL) {
+
+        return (d_KBD_CANCEL);
+    }
+    if (Bret == 255) //timeout
+      return 255;
+
+    return Bret;
 }
 void vdDisplayErrorMsg2(int inColumn, int inRow,  char *msg, char *msg2, int msgType)
 {
-    
+	int inRowtmp;
+	
+    if ((strTCT.byTerminalType % 2) == 0)
+		inRowtmp = V3_ERROR_LINE_ROW;
+	else
+        inRowtmp = inRow;
+			
+    CTOS_LCDTPrintXY(inColumn, inRowtmp-1, "                                        ");
+    CTOS_LCDTPrintXY(inColumn, inRowtmp-1, msg);
+    CTOS_LCDTPrintXY(inColumn, inRowtmp, "                                        ");
+    CTOS_LCDTPrintXY(inColumn, inRowtmp, msg2);	
+    CTOS_Beep();
+    CTOS_Delay(1500);
 }
 
 void vdDisplayErrorMsg3(int inColumn, int inRow,  char *msg, char *msg2, char *msg3)
 {
-    
+	int inRowtmp;
+	
+    if ((strTCT.byTerminalType % 2) == 0)
+		inRowtmp = V3_ERROR_LINE_ROW;
+	else
+        inRowtmp = inRow;
+
+    CTOS_LCDTPrintXY(inColumn, inRowtmp-2, "                                        ");
+    CTOS_LCDTPrintXY(inColumn, inRowtmp-2, msg);
+    CTOS_LCDTPrintXY(inColumn, inRowtmp-1, "                                        ");
+    CTOS_LCDTPrintXY(inColumn, inRowtmp-1, msg2);
+    CTOS_LCDTPrintXY(inColumn, inRowtmp, "                                        ");
+    CTOS_LCDTPrintXY(inColumn, inRowtmp, msg3);	
+    CTOS_Beep();
+    CTOS_Delay(1500);
 }
+
+void vdClearNonTitleLines(void)
+{
+	if(isCheckTerminalMP200() == d_OK)
+	    setLCDPrint(2, DISPLAY_POSITION_LEFT, "                    \n                    \n                    \n                    \n                    \n                    \n                    \n                    ");
+	else	
+	    setLCDPrint(2, DISPLAY_POSITION_LEFT, "                    \n                    \n                    \n                    \n                    \n                    \n                    \n                    \n                    \n                    \n                    \n                    \n                    \n                    \n                    ");
+}
+
 void vdClearBelowLine(int inLine)
 {
+    int i=0, inIndex=0;
+    int inNoLine=8;
+	char szTemp[360+1];
 
+    memset(szTemp, 0, sizeof(szTemp));
+	
+	if ((strTCT.byTerminalType % 2) == 0)
+        inNoLine=16;
+
+
+	inNoLine-=inLine;
+	inNoLine--;
+
+	memset(szTemp, 0, sizeof(szTemp));
+    for(i=0; i<=inNoLine; i++)
+    {
+        memcpy(&szTemp[inIndex], "                    \n", 21);
+	    inIndex+=21;
+    }
+
+    memcpy(&szTemp[inIndex], "                     ", 21);
+	
+    //vdDebug_LogPrintf("vdClearBelowLine");
+	//vdDebug_LogPrintf("szTemp:[%s]", szTemp);
+	//vdDebug_LogPrintf("inNoLine:[%d]", inNoLine);
+	//vdDebug_LogPrintf("inLine:[%d]", inLine);
+
+	setLCDPrint(inLine, DISPLAY_POSITION_LEFT, szTemp);
+	
 }
 
 USHORT usCTOSS_LCDDisplay(BYTE *szStringMsg)

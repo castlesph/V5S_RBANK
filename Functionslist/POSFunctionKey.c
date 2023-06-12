@@ -903,7 +903,11 @@ void vdCTOS_FunctionKeyEx(void)
 
 			// Check if erm function available -- sidumili
 			if (fERM_ChkFuncAvailable(TRUE) == FALSE)
-				return;
+                        {
+                            vdDebug_LogPrintf("fERM_ChkFuncAvailable return...");
+                                return;
+                        }
+				
 			
                 vdCTOS_PrintEMVTerminalConfig();				
             break;
@@ -976,7 +980,7 @@ void vdCTOS_FunctionKeyEx(void)
 			case 11:
 				if(inFunctionKeyPassword("SET GSM AUTH TYPE", ENGINEER_PW) != d_OK)
                     return;
-//				vdCTOS_AuthenticationType();
+				vdCTOS_AuthenticationType();
 			break;
 			
 
@@ -1125,7 +1129,33 @@ void vdCTOS_FunctionKeyEx(void)
 
 				inCTOS_SelectTelco();
 				break;
-            
+            case 56:
+				if(inFunctionKeyPassword("CONFIGURE DIALUP", ENGINEER_PW) != d_OK)
+					return;
+				
+				vdCTOS_ConfigureDialUpComm();
+				break;
+
+			case 57:
+				if(inFunctionKeyPassword("SET IP HEADER", ENGINEER_PW) != d_OK)
+					return;
+				
+				vdSetIPHeader();
+				break;	
+
+			case 60:
+				if(inFunctionKeyPassword("SET PINPAD TYPE", ENGINEER_PW) != d_OK)
+					return;
+
+				vdCTOSS_SelectPinpadType();				
+				break;
+
+			case 63:
+				if(inFunctionKeyPassword("KEY INJECTION", ENGINEER_PW) != d_OK)
+					return;
+
+				vdCTOSS_InjectMKKey();
+				break;
             case 71: /*Reprint any transaction receipt*/
 				
                 // Check if erm function available -- sidumili
@@ -1196,7 +1226,14 @@ void vdCTOS_FunctionKeyEx(void)
                 vdCTOS_PrintCRC();
 				
             break;
-            
+            case 88:
+		vdDebug_LogPrintf("Func88, CTMS DOWNLOAD");
+                if(inFunctionKeyPassword("CTMS DOWNLOAD", SUPER_PW) != d_OK)
+                    return;		
+				
+                inCTOSS_TMSDownloadRequest();
+
+			break;
             case 90:
                 vdModifyPassword();				
             break;
@@ -1210,6 +1247,18 @@ void vdCTOS_FunctionKeyEx(void)
                 vdSetDebugISO();				
             break;
             
+            case 96:
+
+                if(inCheckAllBatchEmtpy() > 0)
+                {
+                     vdClearNonTitleLines();
+                     vdDisplayErrorMsg2(1, 8, "TRANS NOT ALLWD", "BATCH NOT EMPTY");
+                     return;	
+                }
+                vdSelectReceipt();
+				//fTMSBackUpFile = TRUE;
+				//inPrintADCReport(FALSE, TRUE, FALSE);
+				break;	
             case 97: /*Clear Reversal*/
                 if(inFunctionKeyPassword("CLEAR REVERSAL", ENGINEER_PW) != d_OK)
                     return;					
@@ -1223,7 +1272,7 @@ void vdCTOS_FunctionKeyEx(void)
             break;
             
             case 99: /*restart terminal*/
-//                vdCTOS_uiRestart();				
+                vdCTOS_uiRestart(TRUE);				
             break;	
 
 			default:
@@ -1855,3 +1904,108 @@ void vdSetPabx(void)
         inTCTSave(1);
 }
 
+
+void vdSelectReceipt(void)
+{
+    BYTE bHeaderAttr = 0x01+0x04, iCol = 1;
+    BYTE  x = 1;
+    BYTE key;
+    char szHeaderString[50] = "SELECT RECEIPT";
+    char szPrintCopyType[50];
+    int inRet;
+	BYTE strOut[30];
+	USHORT shMaxLen, shMinLen;
+
+    memset(szPrintCopyType, 0, sizeof(szPrintCopyType));
+	
+    strcpy((char *)szPrintCopyType, (char *)"BANK COPY\n"); 
+	strcat((char *)szPrintCopyType, (char *)"MERCHANT COPY");
+
+	
+    key = MenuDisplay(szHeaderString, strlen(szHeaderString), bHeaderAttr, iCol, x, szPrintCopyType, TRUE);
+
+    if (key == 0xFF) 
+    {
+        CTOS_LCDTClearDisplay();
+        setLCDPrint(1, DISPLAY_POSITION_CENTER, "WRONG INPUT!!!");
+        vduiWarningSound();
+        return;  
+    }
+
+    if(key > 0)
+    {
+		int inFlag = 0;
+		
+        if(d_KBD_CANCEL == key)
+            return;
+
+		CTOS_LCDTClearDisplay();
+		vdDispTitleString("SELECT RECEIPT");
+
+        inTCTRead(1);
+        if(key == 1)
+            inFlag=strTCT.fPrintBankCopy;
+		else if(key == 2)
+            inFlag=strTCT.fPrintMerchCopy;
+        while(1)
+        {   
+             vdDispTitleString("SELECT RECEIPT");
+             shMinLen = 1;
+             shMaxLen = 1;
+             if ((strTCT.byTerminalType % 2) == 0)
+                  clearLine(V3_ERROR_LINE_ROW);
+             else	
+                  clearLine(8);
+			 
+			 if (key == 1)
+             CTOS_LCDTPrintXY(1, 6, "Print Bank Copy?");
+			 if (key == 2)
+			 CTOS_LCDTPrintXY(1, 6, "Print Merchant Copy?");
+
+			 CTOS_LCDTPrintXY(1, 7, "1-ON/0-OFF");
+			 
+             memset(strOut,0x00, sizeof(strOut));
+             inRet = InputString(1, 8, 0x00, 0x02, strOut, &shMaxLen, shMinLen, d_INPUT_TIMEOUT);
+
+             if (inRet == d_KBD_CANCEL )
+                  return;
+             else if(0 == inRet )
+                  break;
+             else if(inRet>=1)
+             {
+                  if(key == 1)
+                  {
+                       if(strOut[0] == 0x30)
+                            strTCT.fPrintBankCopy = 0;
+                       else if(strOut[0] == 0x31)
+                            strTCT.fPrintBankCopy = 1;
+                       else
+                       {
+                           CTOS_LCDTClearDisplay();
+                           setLCDPrint(5, DISPLAY_POSITION_CENTER, "WRONG INPUT!!!");
+						   CTOS_Delay(1000);
+                           vduiWarningSound();
+                           break;
+                       }
+                  }
+                  else if(key == 2)
+                  {
+                       if(strOut[0] == 0x30)
+                            strTCT.fPrintMerchCopy = 0;
+                       else if(strOut[0] == 0x31)
+                            strTCT.fPrintMerchCopy = 1;
+					   else
+                       {
+                           CTOS_LCDTClearDisplay();
+                           setLCDPrint(5, DISPLAY_POSITION_CENTER, "WRONG INPUT!!!");
+						   CTOS_Delay(1000);
+                           vduiWarningSound();
+                           break;
+                       }
+                  }
+                       inTCTSave(1);
+                       break;    
+                  }   
+             }
+         }
+}

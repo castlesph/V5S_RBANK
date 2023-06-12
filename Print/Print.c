@@ -5169,11 +5169,9 @@ void vdCTOS_HostInfo(void)
     char szStr[d_LINE_SIZE + 1];
     BYTE szTempBuf[12+1];
     BYTE szBuf[50];
-    BYTE szDisMsg[100];
-	BYTE szErrMsg[30+1];
 
     vdDebug_LogPrintf("-->>vdCTOS_HostInfo[START]");
-	
+
     vduiLightOn();
 
     //fix for issue #00092
@@ -5181,29 +5179,14 @@ void vdCTOS_HostInfo(void)
     if( printCheckPaper()==-1)
         return;
 
+
     shHostIndex = inCTOS_SelectHostSetting();
     if (shHostIndex == -1)
         return;
 
     CTOS_LCDTClearDisplay();
 
-	// Commented to support print confirmation -- sidumili
-	#if 0
-	memset(szDisMsg, 0x00, sizeof(szDisMsg));
-    strcpy(szDisMsg, "HOST INFO  REPORT");
-    strcat(szDisMsg, "|");
-    strcat(szDisMsg, "PRINTING...");
-    usCTOSS_LCDDisplay(szDisMsg);
-	#endif
-
-	inCTOS_SelectFont(d_FONT_FNT_MODE,d_FONT_24x24,0," ");
-    vdSetGolbFontAttrib(d_FONT_24x24, NORMAL_SIZE, NORMAL_SIZE, 0, 0);
-	vdCTOSS_PrinterStart(100);
-    CTOS_PrinterSetHeatLevel(4);
-    inCTOS_DisplayPrintBMP();
-	fRePrintFlag = FALSE;
-
-#if 0	
+#if 0
     if (inMultiAP_CheckMainAPStatus() == d_OK)
     {
         inRet = inCTOS_MultiAPSaveData(d_IPC_CMD_PRINT_HOST_INFO);
@@ -5225,15 +5208,27 @@ void vdCTOS_HostInfo(void)
     }
 #endif
 
+    inCTOS_SelectFont(d_FONT_FNT_MODE,d_FONT_24x24,0," ");
+    vdSetGolbFontAttrib(d_FONT_24x24, NORMAL_SIZE, NORMAL_SIZE, 0, 0);
+
+    // print CRC for all host - 08112015
+    //memset(szCRC, 0, sizeof(szCRC));
+    //vdComputeCRC(strHDT.ulCRC, szCRC);
+
+
+    vdCTOSS_PrinterStart(100);
+    CTOS_PrinterSetHeatLevel(4);
+    inCTOS_DisplayPrintBMP();
+    //vdSetPrintThreadStatus(1); //##00129
+
     //print Logo
-	if(strlen(strHDT.szHeaderLogoName) > 0)
-	    vdCTOSS_PrinterBMPPic(0, 0, strHDT.szHeaderLogoName);
-	else
-		vdCTOSS_PrinterBMPPic(0, 0, "logo.bmp");
-    
-	ushCTOS_PrintHeaderAddress();
+    if(strlen(strHDT.szHeaderLogoName) > 0)
+        vdCTOSS_PrinterBMPPic(0, 0, strHDT.szHeaderLogoName);
+    else
+        vdCTOSS_PrinterBMPPic(0, 0, "logo.bmp");
 
     vdPrintTitleCenter("HOST INFO REPORT");
+    //CTOS_PrinterFline(d_LINE_DOT * 1);
     vdCTOS_PrinterFline(1);
 
     vdSetGolbFontAttrib(d_FONT_16x16, NORMAL_SIZE, DOUBLE_SIZE, 0, 0);
@@ -5291,11 +5286,7 @@ void vdCTOS_HostInfo(void)
         memset (baTemp, 0x00, sizeof(baTemp));
         memset(szTermSerialNumber,0x00,sizeof(szTermSerialNumber));
 
-        //CTOS_GetFactorySN(szTermSerialNumber);     
-		//test
-		usGetSerialNumber(szTermSerialNumber);
-		vdDebug_LogPrintf("saturn print serial number %s", szTermSerialNumber);
-		
+        CTOS_GetFactorySN(szTermSerialNumber);
         szTermSerialNumber[15]=0;
         sprintf(szStr1, "SERIAL NO   : %s", szTermSerialNumber);
         inPrint(szStr1);
@@ -5306,13 +5297,9 @@ void vdCTOS_HostInfo(void)
 
     inPrint("---------------------------------------------");
 
-    //inMMTReadNumofRecords(strHDT.inHostIndex,&inNumOfMerchant);
+    inMMTReadNumofRecords(strHDT.inHostIndex,&inNumOfMerchant);
 
-	// sidumili: fix to load correct record of MMT. function vdPrintCRC called as will HDTRead and last value of HDTid is use in inMMTReadNumofRecords
-	strHDT.inHostIndex = shHostIndex;
-    inMMTReadNumofRecords(strHDT.inHostIndex,&inNumOfMerchant); 
-
-    vdDebug_LogPrintf("[inNumOfMerchant]-[%d]strHDT.inHostIndex[%d],shHostIndex[%d]", inNumOfMerchant,strHDT.inHostIndex, shHostIndex);
+    vdDebug_LogPrintf("[inNumOfMerchant]-[%d]strHDT.inHostIndex[%d]", inNumOfMerchant,strHDT.inHostIndex);
     for(inLoop=1; inLoop <= inNumOfMerchant;inLoop++)
     {
         if((inResult = inMMTReadRecord(strHDT.inHostIndex,inLoop)) !=d_OK)
@@ -5326,7 +5313,7 @@ void vdCTOS_HostInfo(void)
             if(strMMT[0].fMMTEnable)
             {
                 memset(szStr, 0x00, sizeof(szStr));
-                sprintf(szStr, "  MERCHANT : %s", strMMT[0].szMerchantName);
+                sprintf(szStr, "  %s", strMMT[0].szMerchantName);
                 inPrint(szStr);
 
                 memset(szStr, 0x00, sizeof(szStr));
@@ -5349,33 +5336,7 @@ void vdCTOS_HostInfo(void)
 
     vdLineFeed(FALSE);
 
-	//vdCTOSS_PrinterEnd(); // Commented to support print confirmation -- sidumili
-
-	// Capture report -- sidumili
-	vdDebug_LogPrintf("Capturing erm report...");
-	vdDeleteBMP();
-	vdCTOSS_PrinterEnd_CConvert2BMP("/home/ap/pub/Print_BMP.bmp");
-	CTOS_KBDBufFlush();
-	inCTOSS_ERM_Form_Receipt(0);
-			
-	if (strGBLVar.fGBLvConfirmPrint)
-	{
-		// Print confirmation -- sidumili
-		if (inPrintConfirmation("HOST INFO REPORT", FALSE) == d_OK)
-		{		
-			vdCTOSS_PrinterBMPPicEx(0, 0, "/home/ap/pub/Print_BMP.bmp");
-			vdCTOSS_PrinterEnd();
-		}
-		else
-		{			
-			vdCTOSS_PrinterEnd();
-		}
-	}
-	else
-	{
-		usCTOSS_LCDDisplay("HOST INFO REPORT|PRINTING...");
-		vdCTOSS_PrinterEnd();
-	}
+	vdCTOSS_PrinterEnd();
 
     vdDebug_LogPrintf("-->>vdCTOS_HostInfo[END]");
 }
@@ -7432,30 +7393,18 @@ int vdCTOS_PrintIP(void)
 
 	char szStr[d_LINE_SIZE + 1];
 	char szIPMode[d_LINE_SIZE + 1];
-	BYTE szDisMsg[100];
+	char szIPHeader[d_LINE_SIZE + 1];
 
 	vdDebug_LogPrintf("--vdCTOS_PrintIP--");
-		 
+
 	vduiLightOn();
 
 	shHostIndex = inCTOS_SelectHostSetting();
-    if (shHostIndex == -2)
-        return d_NO;
+    if (shHostIndex == -1)
+        return;
 
-         vdDisplayMessageStatusBox(1, 8, "PROCESSING...", MSG_PLS_WAIT, MSG_TYPE_PROCESS);
-         CTOS_Delay(1000);
-		 
-	//CTOS_LCDTClearDisplay();
-	//vdDispTransTitle(IP_REPORT);
-	// Commented to support print confirmation -- sidumili
-	#if 0
-	memset(szDisMsg, 0x00, sizeof(szDisMsg));
-	strcpy(szDisMsg, "IP REPORT");
-	strcat(szDisMsg, "|");
-	strcat(szDisMsg, "PRINTING...");
-	usCTOSS_LCDDisplay(szDisMsg);
-	#endif
-	//usCTOSS_LCDDisplay("IP REPORT");		//Tine:  android
+	CTOS_LCDTClearDisplay();
+	vdDispTransTitle(IP_REPORT);
 
 	inTCPRead(1);
 
@@ -7473,9 +7422,7 @@ int vdCTOS_PrintIP(void)
 	if(strlen(strHDT.szHeaderLogoName) > 0)
 		vdCTOSS_PrinterBMPPic(0, 0, strHDT.szHeaderLogoName);
 	else
-		vdCTOSS_PrinterBMPPic(0, 0, "logo.bmp");	
-
-	ushCTOS_PrintHeaderAddress();
+		vdCTOSS_PrinterBMPPic(0, 0, "logo.bmp");
 
     vdPrintTitleCenter("IP REPORT");
 	vdCTOS_PrinterFline(1);
@@ -7487,8 +7434,7 @@ int vdCTOS_PrintIP(void)
 
 	vdCTOS_PrinterFline(1);
 
-	if (strCPT.inCommunicationMode == WIFI_MODE)
-		inPrint("TERMINAL");
+	inPrint("TERMINAL");
 
 	vdSetGolbFontAttrib(d_FONT_16x16, NORMAL_SIZE, DOUBLE_SIZE, 1, 0);
     vdCTOS_PrinterFline(1);
@@ -7512,56 +7458,57 @@ int vdCTOS_PrintIP(void)
 
   if (strCPT.inCommunicationMode == GPRS_MODE)
   {
-  	 inMOBILE_GetConnectConfig();
-
-     memset(szStr, 0x00, d_LINE_SIZE);
-     sprintf(szStr, "IP          : %s", szIP);
-     inPrint(szStr);
-
-     memset(szStr, 0x00, d_LINE_SIZE);
-     sprintf(szStr, "DNS 1       : %s", szDNS1);
-     inPrint(szStr);
-
-     memset(szStr, 0x00, d_LINE_SIZE);
-     sprintf(szStr, "DNS 2       : %s", szDNS2);
-		 inPrint(szStr);
-
-     memset(szStr, 0x00, d_LINE_SIZE);
-     sprintf(szStr, "GATEWAY     : %s", szGateWay);
-     inPrint(szStr);
-
-     memset(szStr, 0x00, d_LINE_SIZE);
-     sprintf(szStr, "SUBNET MASK : %s", szSubnetMask);
-     inPrint(szStr);
-		 /*AAA temp only need to change value when we have function to get data end*/
-  }
-  else if (strCPT.inCommunicationMode == WIFI_MODE)
-  {
-//android-removed
-	 inWIFI_GetConnectConfig();
-//end
+     inCTOSS_SIMGetGPRSIPInfo();
 	 //memset(szStr, 0x00, d_LINE_SIZE);
 	 //sprintf(szStr, "        IP MODE: %s", szIPMode);
 	 //inPrint(szStr);
 
      memset(szStr, 0x00, d_LINE_SIZE);
-     sprintf(szStr, "IP          : %s", szIP);
+     sprintf(szStr, "                 IP: %s", szIP);
      inPrint(szStr);
 
      memset(szStr, 0x00, d_LINE_SIZE);
-     sprintf(szStr, "DNS 1       : %s", szDNS1);
+     sprintf(szStr, "              DNS 1: %s", szDNS1);
      inPrint(szStr);
 
      memset(szStr, 0x00, d_LINE_SIZE);
-     sprintf(szStr, "DNS 2       : %s", szDNS2);
+     sprintf(szStr, "              DNS 2: %s", szDNS2);
 		 inPrint(szStr);
 
      memset(szStr, 0x00, d_LINE_SIZE);
-     sprintf(szStr, "GATEWAY     : %s", szGateWay);
+     sprintf(szStr, "            GATEWAY: %s", szGateWay);
      inPrint(szStr);
 
      memset(szStr, 0x00, d_LINE_SIZE);
-     sprintf(szStr, "SUBNET MASK : %s", szSubnetMask);
+     sprintf(szStr, "        SUBNET MASK: %s", szSubnetMask);
+     inPrint(szStr);
+		 /*AAA temp only need to change value when we have function to get data end*/
+  }
+  else if (strCPT.inCommunicationMode == WIFI_MODE)
+  {
+     inWIFI_GetConnectConfig();
+	 //memset(szStr, 0x00, d_LINE_SIZE);
+	 //sprintf(szStr, "        IP MODE: %s", szIPMode);
+	 //inPrint(szStr);
+
+     memset(szStr, 0x00, d_LINE_SIZE);
+     sprintf(szStr, "                 IP: %s", szIP);
+     inPrint(szStr);
+
+     memset(szStr, 0x00, d_LINE_SIZE);
+     sprintf(szStr, "              DNS 1: %s", szDNS1);
+     inPrint(szStr);
+
+     memset(szStr, 0x00, d_LINE_SIZE);
+     sprintf(szStr, "              DNS 2: %s", szDNS2);
+		 inPrint(szStr);
+
+     memset(szStr, 0x00, d_LINE_SIZE);
+     sprintf(szStr, "            GATEWAY: %s", szGateWay);
+     inPrint(szStr);
+
+     memset(szStr, 0x00, d_LINE_SIZE);
+     sprintf(szStr, "        SUBNET MASK: %s", szSubnetMask);
      inPrint(szStr);
 
   }
@@ -7569,29 +7516,29 @@ int vdCTOS_PrintIP(void)
   {
   	if(strTCP.fDHCPEnable == 1)
   	{
-	  	 //Print_EthernetStatus();
+	  	 vdPrint_EthernetStatus();
 		 //memset(szStr, 0x00, d_LINE_SIZE);
 		 //sprintf(szStr, "        IP MODE: %s", szIPMode);
 		 //inPrint(szStr);
 
 		 memset(szStr, 0x00, d_LINE_SIZE);
-	     sprintf(szStr, "IP          : %s", szIP);
+	     sprintf(szStr, "             IP: %s", szIP);
 	     inPrint(szStr);
 
 	     memset(szStr, 0x00, d_LINE_SIZE);
-	     sprintf(szStr, "DNS 1       : %s", szDNS1);
+	     sprintf(szStr, "          DNS 1: %s", szDNS1);
 	     inPrint(szStr);
 
 	     memset(szStr, 0x00, d_LINE_SIZE);
-	     sprintf(szStr, "DNS 2       : 0.0.0.0");
+	     sprintf(szStr, "          DNS 2: 0.0.0.0");
 		 inPrint(szStr);
 
 	     memset(szStr, 0x00, d_LINE_SIZE);
-	     sprintf(szStr, "GATEWAY     : %s", szGateWay);
+	     sprintf(szStr, "        GATEWAY: %s", szGateWay);
 	     inPrint(szStr);
 
 	     memset(szStr, 0x00, d_LINE_SIZE);
-	     sprintf(szStr, "SUBNET MASK : %s", szSubnetMask);
+	     sprintf(szStr, "    SUBNET MASK: %s", szSubnetMask);
 	     inPrint(szStr);
   	}
 	else
@@ -7601,23 +7548,23 @@ int vdCTOS_PrintIP(void)
 		 //inPrint(szStr);
 
 	     memset(szStr, 0x00, d_LINE_SIZE);
-	     sprintf(szStr, "IP          : %s", (char *)strTCP.szTerminalIP);
+	     sprintf(szStr, "             IP: %s", (char *)strTCP.szTerminalIP);
 	     inPrint(szStr);
 
 	     memset(szStr, 0x00, d_LINE_SIZE);
-	     sprintf(szStr, "DNS 1       : %s", (char *)strTCP.szHostDNS1);
+	     sprintf(szStr, "          DNS 1: %s", (char *)strTCP.szHostDNS1);
 	     inPrint(szStr);
 
 	     memset(szStr, 0x00, d_LINE_SIZE);
-	     sprintf(szStr, "DNS 2       : %s", (char *)strTCP.szHostDNS2);
+	     sprintf(szStr, "          DNS 2: %s", (char *)strTCP.szHostDNS2);
 	     inPrint(szStr);
 
 	     memset(szStr, 0x00, d_LINE_SIZE);
-	     sprintf(szStr, "GATEWAY     : %s", (char *)strTCP.szGetWay);
+	     sprintf(szStr, "        GATEWAY: %s", (char *)strTCP.szGetWay);
 	     inPrint(szStr);
 
 	     memset(szStr, 0x00, d_LINE_SIZE);
-	     sprintf(szStr, "SUBNET MASK : %s", (char *)strTCP.szSubNetMask);
+	     sprintf(szStr, "    SUBNET MASK: %s", (char *)strTCP.szSubNetMask);
 	     inPrint(szStr);
 	}
   }
@@ -7629,83 +7576,65 @@ int vdCTOS_PrintIP(void)
 	vdSetGolbFontAttrib(d_FONT_16x16, NORMAL_SIZE, DOUBLE_SIZE, 1, 0);
 	vdCTOS_PrinterFline(1);
 
-    memset(szStr, 0x00, d_LINE_SIZE);
-    sprintf(szStr, "NAME            : %s", (char *)strHDT.szHostLabel);
-    inPrint(szStr);
-    
-    memset(szStr, 0x00, d_LINE_SIZE);
-    sprintf(szStr, "COMM MODE       : %s", (strCPT.inCommunicationMode == GPRS_MODE ? "GPRS" : "WIFI"));
-    inPrint(szStr);
-    
-    memset(szStr, 0x00, d_LINE_SIZE);
-    sprintf(szStr, "IP HEADER       : %d", strCPT.inIPHeader);
-    inPrint(szStr);
-
 	memset(szStr, 0x00, d_LINE_SIZE);
-	sprintf(szStr, "PRI IP          : %s", (char *)strCPT.szPriTxnHostIP);
+	sprintf(szStr, "           NAME: %s", (char *)strCPT.szHostName);
+	inPrint(szStr);
+	
+	memset(szStr, 0x00, d_LINE_SIZE);
+	memset(szIPHeader, 0x00, sizeof(szIPHeader));
+	sprintf(szIPHeader, "%d", strCPT.inIPHeader);
+	sprintf(szStr, "      IP HEADER: %s", szIPHeader);
 	inPrint(szStr);
 
 	memset(szStr, 0x00, d_LINE_SIZE);
-	sprintf(szStr, "SEC IP          : %s", (char *)strCPT.szSecTxnHostIP);
+	if (strlen(strCPT.szPriTxnHostIP) > 25)
+	     sprintf(szStr, "PRI IP: %s", (char *)strCPT.szPriTxnHostIP);
+	else
+	     sprintf(szStr, "         PRI IP: %s", (char *)strCPT.szPriTxnHostIP);
 	inPrint(szStr);
 
 	memset(szStr, 0x00, d_LINE_SIZE);
-	sprintf(szStr, "PRI IP PORT     : %04d", strCPT.inPriTxnHostPortNum);
+	if (strlen(strCPT.szSecTxnHostIP) > 25)
+	     sprintf(szStr, "SEC IP: %s", (char *)strCPT.szSecTxnHostIP);
+	else
+		 sprintf(szStr, "         SEC IP: %s", (char *)strCPT.szSecTxnHostIP);
 	inPrint(szStr);
 
 	memset(szStr, 0x00, d_LINE_SIZE);
-	sprintf(szStr, "SEC IP PORT     : %04d", strCPT.inSecTxnHostPortNum);
+	sprintf(szStr, "    PRI IP PORT: %04d", strCPT.inPriTxnHostPortNum);
 	inPrint(szStr);
 
 	memset(szStr, 0x00, d_LINE_SIZE);
-	sprintf(szStr, "PRI SETTLE IP   : %s", (char *)strCPT.szPriSettlementHostIP);
+	sprintf(szStr, "    SEC IP PORT: %04d", strCPT.inSecTxnHostPortNum);
 	inPrint(szStr);
 
 	memset(szStr, 0x00, d_LINE_SIZE);
-	sprintf(szStr, "SEC SETTLE IP   : %s", (char *)strCPT.szSecSettlementHostIP);
+	if (strlen(strCPT.szPriSettlementHostIP) > 25)
+	     sprintf(szStr, "PRI SET: %s", (char *)strCPT.szPriSettlementHostIP);
+	else
+		 sprintf(szStr, "  PRI SETTLE IP: %s", (char *)strCPT.szPriSettlementHostIP);
 	inPrint(szStr);
 
 	memset(szStr, 0x00, d_LINE_SIZE);
-	sprintf(szStr, "PRI SETTLE PORT : %04d", strCPT.inPriSettlementHostPort);
+	if (strlen(strCPT.szSecSettlementHostIP) > 25)
+	     sprintf(szStr, "SEC SET: %s", (char *)strCPT.szSecSettlementHostIP);
+	else
+		 sprintf(szStr, "  SEC SETTLE IP: %s", (char *)strCPT.szSecSettlementHostIP);
 	inPrint(szStr);
 
 	memset(szStr, 0x00, d_LINE_SIZE);
-	sprintf(szStr, "SEC SETTLE PORT : %04d", strCPT.inSecSettlementHostPort);
+	sprintf(szStr, "PRI SETTLE PORT: %04d", strCPT.inPriSettlementHostPort);
+	inPrint(szStr);
+
+	memset(szStr, 0x00, d_LINE_SIZE);
+	sprintf(szStr, "SEC SETTLE PORT: %04d", strCPT.inSecSettlementHostPort);
 	inPrint(szStr);
 
 	vdCTOS_PrinterFline(1);
 
 	vdLineFeed(FALSE);
 
-	//vdCTOSS_PrinterEnd(); // Commented to support print confirmation -- sidumili
-
-	// Capture report -- sidumili
-	vdDebug_LogPrintf("Capturing erm report...");
-	vdDeleteBMP();
-	vdCTOSS_PrinterEnd_CConvert2BMP("/home/ap/pub/Print_BMP.bmp");
-	CTOS_KBDBufFlush();
-	inCTOSS_ERM_Form_Receipt(0);
-	
-	if (strGBLVar.fGBLvConfirmPrint)
-	{
-		// Print confirmation -- sidumili
-		if (inPrintConfirmation("IP REPORT", FALSE) == d_OK)
-		{
-			vdCTOSS_PrinterBMPPicEx(0, 0, "/home/ap/pub/Print_BMP.bmp");
-			vdCTOSS_PrinterEnd();
-		}
-		else
-		{			
-			vdCTOSS_PrinterEnd();
-		}
-	}
-	else
-	{
-		usCTOSS_LCDDisplay("IP REPORT|PRINTING...");
-		vdCTOSS_PrinterEnd();
-	}
-
-	 return (ST_SUCCESS);
+	vdCTOSS_PrinterEnd();
 }
 
 void vdDisplayIPInforMP200(void){
