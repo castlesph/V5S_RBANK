@@ -6725,6 +6725,59 @@ int inCTOS_SelectHostSettingWithIndicator(int inIndicator)
     return inCPTID[key-1];
 }
 
+
+void vdCTOS_AuthenticationType(void)
+{
+	int inKeySelected = 0;
+	char szHeaderString[50] = {0};
+	char szChoiceMsg[1024] = {0};
+	int bHeaderAttr = 0x01+0x04, key=0; 
+	BYTE szTemp1[20 + 1] = {0};
+	int inValue = 0;
+	int inAuthType;
+
+    CTOS_LCDTClearDisplay();
+    vdDispTitleString("SET GSM AUTH TYPE");
+
+	inAuthType = get_env_int("GSMAUTHTYPE");
+	
+	memset(szHeaderString, 0x00, sizeof(szHeaderString));
+	memset(szChoiceMsg, 0x00, sizeof(szChoiceMsg));
+	memset(szTemp1, 0x00, sizeof(szTemp1));
+	
+	switch(inAuthType)
+	{
+		case AUTH_TYPE_AUTO:
+			strcpy(szTemp1, "AUTO");
+			break;
+		case AUTH_TYPE_PAP:
+			strcpy(szTemp1, "PAP");
+			break;
+		case AUTH_TYPE_CHAP:
+			strcpy(szTemp1, "CHAP");
+			break;
+		default:
+			strcpy(szTemp1, "NONE");
+			break;
+	}
+
+	sprintf(szHeaderString, "AUTH TYPE: %s", szTemp1);	
+	strcpy((char*)szChoiceMsg, "AUTO \nPAP \nCHAP ");
+	inKeySelected = MenuDisplay(szHeaderString,strlen(szHeaderString), bHeaderAttr, 1, 1, szChoiceMsg, TRUE);
+	
+	vdDebug_LogPrintf("::AUTH TYPE::inSetMenuSelection::inKeySelected[%d]", inKeySelected);
+	
+	if (inKeySelected != d_KBD_CANCEL)
+	{
+		inValue = inKeySelected - 1; // (0-AUTO, 1-PAP, 2-CHAP)
+		put_env_int("GSMAUTHTYPE", inValue);		
+	}
+	
+	vdDebug_LogPrintf("::AUTH TYPE::inKeySelected[%d]::szHeaderString[%s]::inValue[%d]", inKeySelected, szHeaderString, inValue);
+       
+    return ;
+}
+
 void vdCTOS_PingIPAddress(void)
 {
 		int inCPTNumRecs = 0,
@@ -7443,3 +7496,62 @@ void vdCTOSS_ExportAllAppFiles(void)
 }
 
 
+int inCTOS_SelectCardOrCash(void)
+{
+    BYTE bHeaderAttr = 0x01+0x04, iCol = 1;
+    BYTE  x = 1;
+    BYTE key;
+    char szHeaderString[50] = "BILLS PAYMENT";
+    char szHostMenu[1024] = {0};
+    char szHostName[100][100];
+    int inCPTID[100];
+    int inLoop = 0;
+    
+    if (inMultiAP_CheckSubAPStatus() == d_OK)
+        return d_OK;
+    
+
+    memset(szHostMenu, 0x00, sizeof(szHostMenu));
+    memset(szHostName, 0x00, sizeof(szHostName));
+    memset((char*)inCPTID, 0x00, sizeof(inCPTID));
+
+    strcat((char *)szHostMenu, (char *)"CARD");  
+    strcat((char *)szHostMenu, (char *)" \n");  
+    strcat((char *)szHostMenu, (char *)"CASH");  
+//        strcat((char *)szHostMenu, (char *)" \n");  
+//    
+//    inHDTReadHostName(szHostName, inCPTID);
+//
+//    for (inLoop = 0; inLoop < 100; inLoop++)
+//    {
+//        if (szHostName[inLoop][0]!= 0)
+//        {
+//            strcat((char *)szHostMenu, szHostName[inLoop]);
+//            if (szHostName[inLoop+1][0]!= 0)
+//                strcat((char *)szHostMenu, (char *)" \n");      
+//        }
+//        else
+//            break;
+//    }
+        
+    key = MenuDisplay(szHeaderString, strlen(szHeaderString), bHeaderAttr, iCol, x, szHostMenu, TRUE);
+
+    if (key == 0xFF) 
+    {
+        CTOS_LCDTClearDisplay();
+        setLCDPrint(1, DISPLAY_POSITION_CENTER, "WRONG INPUT!!!");
+        vduiWarningSound();
+        return -1;  
+    }
+
+    if(key > 0)
+    {
+        if(d_KBD_CANCEL == key)
+            return -1;
+        
+        vdDebug_LogPrintf("key[%d]", key);
+
+    }
+    
+    return key;
+}

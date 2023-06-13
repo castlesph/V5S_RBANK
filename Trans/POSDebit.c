@@ -1756,7 +1756,7 @@ int inCTOS_Payment(void)
 
 int inCTOS_PaymentFlowProcess(void)
 {
-	int inRet = d_NO;
+	int inRet = d_NO, key;
 	int iOrientation = get_env_int("#ORIENTATION");
 	
 	vdDebug_LogPrintf("SATURN --inCTOS_CashInFlowProcess--");
@@ -1795,16 +1795,32 @@ int inCTOS_PaymentFlowProcess(void)
 	inRet = inCTOS_UpdateTxnTotalAmount();
 	if(d_OK != inRet)
 		return inRet;
-	
+	key = inCTOS_SelectCardOrCash();
+        if(key == 2) 
+        {
+            vdDebug_LogPrintf("Select CASH");
+            srTransRec.fBillsPaymentCash = VS_TRUE;
+            
+        }
+        else if(key != 1)
+        {
+            vdDebug_LogPrintf("Invalid select CASH/Card[%d]", key);
+            return d_NO;
+        }
+                
     if(inDebitSaleGroupIndex)
     {
-		vdDebug_LogPrintf("SATURN inDebitSaleGroupIndex = [%d]", inDebitSaleGroupIndex);
+		vdDebug_LogPrintf("SATURN inDebitSaleGroupIndex = [%d],key=%d", inDebitSaleGroupIndex, key);
 		if(strTCT.fDebitEMVCapable == TRUE)
         {
-            //inRet = inCTOS_GetCardFields();
-            inRet = inCTOS_GetCardFieldsCtls();
-            if(d_OK != inRet)
-                return inRet;
+            if(key == 1)
+            {
+                       //inRet = inCTOS_GetCardFields();
+                inRet = inCTOS_GetCardFieldsCtls();
+                if(d_OK != inRet)
+                    return inRet; 
+            }
+
 			
             vdDebug_LogPrintf("srTransRec.fBillsPaymentCash: %d", srTransRec.fBillsPaymentCash);
 			if(srTransRec.fBillsPaymentCash == VS_TRUE)
