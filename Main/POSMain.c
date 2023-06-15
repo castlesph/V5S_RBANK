@@ -1192,6 +1192,7 @@ int inDisplayLockScreen()
 		shMaxLen = 6;
 	BYTE szTitleDisplay[MAX_CHAR_PER_LINE + 1] = {0},
 		szTitle[MAX_CHAR_PER_LINE + 1] = {0};
+        return -1;
 #if 0
 	if(strTCT.fScreenLocked != TRUE)
 		return -1;
@@ -1381,10 +1382,10 @@ int inCTOS_IdleEventProcess(void)
 			fERMTransaction=FALSE;
 
 		/* BDO: USD setup - Load BDO host index to get the correct currency index - start -- jzg */
-		inDatabase_TerminalOpenDatabase();
-		inHDTReadEx(1); 
-		inCSTReadEx(strHDT.inCurrencyIdx); 
-		inDatabase_TerminalCloseDatabase();
+//		inDatabase_TerminalOpenDatabase();
+//		inHDTReadEx(1); 
+//		inCSTReadEx(strHDT.inCurrencyIdx); 
+//		inDatabase_TerminalCloseDatabase();
 		/* BDO: USD setup - Load BDO host index to get the correct currency index - end -- jzg */
 
 		//Open the Back Light in the LCD Display //
