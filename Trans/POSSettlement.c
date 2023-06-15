@@ -731,22 +731,18 @@ int inCTOS_BATCH_TOTAL_Process(void)
 int inCTOS_BATCH_REVIEW_Process(void)
 {
     int inRet;
-
-	//batch review password should only appear if function 50 was pressed - #00176
-    /*inRet = inCTOS_GetTxnPassword();
+    
+    inRet = inCTOS_GetTxnPassword();
     if(d_OK != inRet)
-       return inRet;*/
+       return inRet;
 
-	inRet = inCTOS_TEMPCheckAndSelectMutipleMID();
-	if(d_OK != inRet)
-		return inRet;
-
-   vdDisplayMessageStatusBox(1, 8, "PROCESSING...", MSG_PLS_WAIT, MSG_TYPE_PROCESS);
-	CTOS_Delay(1000);
+    inRet = inCTOS_SelectHostSetting();
+    if (inRet == -1)
+        return;
 
     if (inMultiAP_CheckMainAPStatus() == d_OK)
     {
-        inRet = inCTOS_MultiAPSaveData(d_IPC_CMD_BATCH_REVIEW);
+        inRet = inCTOS_MultiAPSaveData(d_IPC_CMD_BATCH_TOTAL);
         if(d_OK != inRet)
             return inRet;
     }
@@ -767,18 +763,19 @@ int inCTOS_BATCH_REVIEW_Process(void)
 
     inRet = inCTOS_CheckAndSelectMutipleMID();
     if(d_OK != inRet)
-        return ST_ERROR;
+        return;
 
     inRet = inCTOS_ChkBatchEmpty();
     if(d_OK != inRet)
         return inRet;
 
-    inRet = inCTOS_BatchReviewFlow();    
+    //inRet = inCTOS_DisplayBatchTotal();
+    inRet = inCTOS_DisplaySettleBatchTotal(BATCH_TOTAL, FALSE);
     if(d_OK != inRet)
         return inRet;
 
     vdSetErrorMessage("");
-    
+
     return d_OK;
     
 }

@@ -5069,7 +5069,7 @@ void vdCTOS_PrintCRC(void)
 
 	inPrint("APPLICATION:");
 
-	#if 0
+	#if 1
 	// Print CRC
 	inReadDistinctAppName(&inNumRecs);
 
@@ -5082,14 +5082,14 @@ void vdCTOS_PrintCRC(void)
 		memset(szPrintCRC, 0x00, sizeof(szPrintCRC));
 
 		strcpy(szTempCRC, strMultiHDT[i].szAPName);
-		//strcat(szTempCRC, "_CRC");
+		strcat(szTempCRC, "_CRC");
 		vdDebug_LogPrintf("szTempCRC[%s]", szTempCRC);
 
-		//inCTOSS_GetEnvDB(szTempCRC, szCRC);
-		//vdDebug_LogPrintf("szCRC[%s]", szCRC);
+		inCTOSS_GetEnvDB(szTempCRC, szCRC);
+		vdDebug_LogPrintf("szCRC[%s]", szCRC);
 
 		//TINE:  android
-		getAppPackageInfo(szTempCRC, szCRC);
+//		getAppPackageInfo(szTempCRC, szCRC);
 		vdDebug_LogPrintf("szTempCRC[%s], szCRC[%s]", szTempCRC, szCRC);
 
 		if (strlen(szCRC) > 0)
@@ -5097,11 +5097,11 @@ void vdCTOS_PrintCRC(void)
 			memset(szAPName, 0x00, sizeof(szAPName));
 
 			//if (strcmp(strMultiHDT[i].szAPName, "V5S_BANCNET") == 0)
-			if (strcmp(strMultiHDT[i].szAPName, "com.Source.S1_BANCNET.BANCNET") == 0)	
-				strcpy(szAPName, "BANCNET");
+			if (strcmp(strMultiHDT[i].szAPName, "V5S_RBANK") == 0)	
+				strcpy(szAPName, "V5S_RBANK");
 
-			if (strcmp(strMultiHDT[i].szAPName, "V5S_DINERS") == 0)
-				strcpy(szAPName, "DINERS");
+			if (strcmp(strMultiHDT[i].szAPName, "V5S_RBDEBIT") == 0)
+				strcpy(szAPName, "V5S_RBDEBIT");
 
 			if (strcmp(strMultiHDT[i].szAPName, "V5S_DINERSINST") == 0)
 				strcpy(szAPName, "SB INST");
@@ -5127,8 +5127,8 @@ void vdCTOS_PrintCRC(void)
 
 	vdLineFeed(FALSE);
 
-	//vdCTOSS_PrinterEnd(); // Commented to support print confirmation -- sidumili
-
+	vdCTOSS_PrinterEnd(); // Commented to support print confirmation -- sidumili
+#if 0
 	// Capture report -- sidumili
 	vdDebug_LogPrintf("Capturing erm report...");
 	vdDeleteBMP();
@@ -5154,6 +5154,7 @@ void vdCTOS_PrintCRC(void)
 		usCTOSS_LCDDisplay("CRC REPORT|PRINTING...");
 		vdCTOSS_PrinterEnd();
 	}
+#endif        
 }
 /*albert - end - Aug2014 - compute crc*/
 void vdCTOS_HostInfo(void)

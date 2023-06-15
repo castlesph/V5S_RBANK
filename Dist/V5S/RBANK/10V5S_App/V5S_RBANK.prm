@@ -20,3 +20,6 @@ V5S_NETS
 0=TERMINAL\TCT\byRS232DebugPort=8;Debug
 0=TERMINAL\TCT\inMenuid=1;menu id
 0=ENV\CFG\szValue\szTag\BANCNET_TESTKEY=1;Hardcode TMK for Debit
+0=ENV\CFG\szValue\szTag\V5S_RBDEBIT_CRC=0001;RDebit app CRC
+0=ENV\CFG\szValue\szTag\V5S_RBANK_CRC=0001;RCredit app CRC
+
