@@ -1732,7 +1732,8 @@ int main(int argc,char *argv[])
 
 	inDatabase_TerminalOpenDatabase();
     inTCTReadEx(1);
-    inCPTReadEx(1);
+//    inCPTReadEx(1);
+    inCPTReadEx(BANCNET_HOST);
     inPCTReadEx(1);
     inCSTReadEx(1);
     inTCPRead(1);
