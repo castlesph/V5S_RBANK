@@ -453,50 +453,19 @@ USHORT getCardNO(OUT BYTE *baBuf) {
     USHORT usMaxLen = 19;
     USHORT usInputLine = 8;
 
-    BYTE szTitle[25+1];
-    BYTE szDisplay[100];
-
-    memset(szTitle, 0x00, sizeof(szTitle));
-    szGetTransTitle(srTransRec.byTransType, szTitle);
-
-    strcpy(szDisplay, "8");
-    strcat(szDisplay, "|");
-    strcat(szDisplay, "21");
-    strcat(szDisplay, "|");
-    strcat(szDisplay, szTitle);
-    strcat(szDisplay, "|");
-    strcat(szDisplay, "CARD NUMBER: ");
-
-    while (1) {
-
-        //usRet = shCTOS_GetNum(usInputLine, 0x01, baBuf, &usLens, usMinLen, usMaxLen, 0, d_INPUT_TIMEOUT);
-
-        usRet = InputStringUI(0x01, 0x02, baBuf, &usLens, usMinLen, d_INPUT_TIMEOUT, szDisplay);
-
-        vdDebug_LogPrintf("usRet[%d]atoi(baBuf)=[%d]usLens[%d]", usRet, atoi(baBuf), usLens);
-
-        if (usRet == d_KBD_CANCEL)
+    while(1)
+    {
+        usRet = shCTOS_GetNum(usInputLine, 0x01, baBuf, &usLens, usMinLen, usMaxLen, 0, d_INPUT_TIMEOUT);
+        if (usRet == d_KBD_CANCEL )
             return (d_EDM_USER_CANCEL);
-		else if (usRet == 0xFF) {
-			vdDisplayMessageBox(1, 8, "", "TIME OUT", "", MSG_TYPE_TIMEOUT);
-			CTOS_Beep();
-			CTOS_Delay(2000);
-			return TIME_OUT;
-		}
-        //if (usRet >= usMinLen && usRet <= usMaxLen)
-        if (usRet == 'A') {
-            //TINE:  save PAN to srTransRec
-            vdDebug_LogPrintf("AAA-baBuf[%s]", baBuf);
-          //  if (usLens >= usMinLen && usLens <= usMaxLen) {
-                strcpy(srTransRec.szPAN, baBuf);
-                return (d_OK);
-          //  }
+        if (usRet >= usMinLen && usRet <= usMaxLen)
+        {
+            return (d_OK);
         }
 
         baBuf[0] = 0x00;
     }
 }
-
 
 unsigned char WaitKey(short Sec)
 {
@@ -2252,7 +2221,7 @@ int inCTOS_ManualEntryProcess (BYTE *szPAN)
 
 	//tine/sidumili: android - set ui thread to display nothing
 	DisplayStatusLine(" ");
-	
+	vdDebug_LogPrintf("inCTOS_ManualEntryProcess =[%s]",szPAN);
     //CTOS_LCDTClearDisplay();
 
 //   CTOS_PrinterPutString("inCTOS_ManualEntryProcess");
@@ -2262,6 +2231,7 @@ int inCTOS_ManualEntryProcess (BYTE *szPAN)
    inTCTRead(1);
    if(strTCT.fManualEntry == 0  || srTransRec.fDebit == TRUE)
    {
+       vdDebug_LogPrintf("fManualEntry=%d, fDebit=%d",strTCT.fManualEntry, srTransRec.fDebit);
         vdSetErrorMessage("TRANS NOT ALLWD");
         return d_NO;
     }
@@ -2562,6 +2532,10 @@ vdDebug_LogPrintf("szDisMsg[%s],fEntryCardfromIDLE=%d",szDisMsg, fEntryCardfromI
          CTOS_KBDInKey(&byKeyBuf); //input  
          if ((byKeyBuf) || (d_OK == inCTOS_ValidFirstIdleKey()))
          {
+            BYTE bKey = 0x00;
+            vdDebug_LogPrintf("got key, byKeyBuf=%d",byKeyBuf);
+            CTOS_KBDHit(&bKey);
+            vdDebug_LogPrintf("got key, bKey=%d",bKey);
             if (CTLS_V3_SHARECTLS != inCTOSS_GetCtlsMode() && CTLS_V3_INT_SHARECTLS != inCTOSS_GetCtlsMode())
                 inCTOSS_CLMCancelTransaction();
 
@@ -2569,13 +2543,23 @@ vdDebug_LogPrintf("szDisMsg[%s],fEntryCardfromIDLE=%d",szDisMsg, fEntryCardfromI
 
 
 
-            if (byKeyBuf == d_KBD_CANCEL) {
+            if (bKey == d_KBD_CANCEL) {
                 CTOS_LCDTClearDisplay();
                 CTOS_KBDBufFlush();
                 //                    vdSetErrorMessage("TXN CANCELLED");
                 return USER_ABORT;
             }
-
+            
+            //right now not supported manual entry, so just return if press enter at detect card UI, may need to comment it later if support credit
+            if (bKey == d_KBD_ENTER) {
+                CTOS_LCDTClearDisplay();
+                CTOS_KBDBufFlush();
+                setLCDPrint(8, DISPLAY_POSITION_LEFT, "CARD NOT PRESENT");
+                vduiWarningSound();
+                CTOS_Delay(1500);
+                return USER_ABORT;
+            }
+            
             memset(srTransRec.szPAN, 0x00, sizeof (srTransRec.szPAN));
             if (d_OK == inCTOS_ValidFirstIdleKey())
                 srTransRec.szPAN[0] = chGetFirstIdleKey();
@@ -7335,7 +7319,10 @@ vdDebug_LogPrintf("V3 display...[%s]",szDisMsg);
         CTOS_KBDInKey(&byKeyBuf); //input  
         if ((byKeyBuf) || (d_OK == inCTOS_ValidFirstIdleKey()))
         {
+            BYTE bKey = 0x00;
             vdDebug_LogPrintf("got key, byKeyBuf=%d",byKeyBuf);
+            CTOS_KBDHit(&bKey);
+            vdDebug_LogPrintf("got key, bKey=%d",bKey);
             if (CTLS_V3_SHARECTLS != inCTOSS_GetCtlsMode() && CTLS_V3_INT_SHARECTLS != inCTOSS_GetCtlsMode())
                 inCTOSS_CLMCancelTransaction();
 
@@ -7343,10 +7330,20 @@ vdDebug_LogPrintf("V3 display...[%s]",szDisMsg);
 
 
 
-            if (byKeyBuf == d_KBD_CANCEL) {
+            if (bKey == d_KBD_CANCEL) {
                 CTOS_LCDTClearDisplay();
                 CTOS_KBDBufFlush();
-                //                    vdSetErrorMessage("TXN CANCELLED");
+//                vdSetErrorMessage("TXN CANCELLED");
+                return USER_ABORT;
+            }
+            
+            //right now not supported manual entry, so just return if press enter at detect card UI, may need to comment it later if support credit
+            if (bKey == d_KBD_ENTER) {
+                CTOS_LCDTClearDisplay();
+                CTOS_KBDBufFlush();
+                setLCDPrint(8, DISPLAY_POSITION_LEFT, "CARD NOT PRESENT");
+                vduiWarningSound();
+                CTOS_Delay(1500);
                 return USER_ABORT;
             }
 
