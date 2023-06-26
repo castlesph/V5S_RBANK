@@ -213,15 +213,12 @@
             <linkerLibLibItem>xml2</linkerLibLibItem>
             <linkerLibLibItem>caethernet</linkerLibLibItem>
             <linkerLibLibItem>v5smultiap</linkerLibLibItem>
-            <linkerLibLibItem>v5sinput</linkerLibLibItem>
-            <linkerLibLibItem>v5scfgexpress</linkerLibLibItem>
             <linkerLibLibItem>casqlite</linkerLibLibItem>
             <linkerLibLibItem>caxml</linkerLibLibItem>
             <linkerLibLibItem>v5sISOEnginee</linkerLibLibItem>
             <linkerLibLibItem>v5sEFT</linkerLibLibItem>
             <linkerLibLibItem>v5sEFTNAC</linkerLibLibItem>
             <linkerLibLibItem>bluetooth</linkerLibLibItem>
-            <linkerLibFileItem>../VEGA_Library/NETBEANS/DMenu/Ver0003/Lib/V5S_LibDMenu.a</linkerLibFileItem>
             <linkerLibLibItem>caclentry</linkerLibLibItem>
             <linkerLibLibItem>caclmdl</linkerLibLibItem>
             <linkerLibLibItem>bluetooth</linkerLibLibItem>
@@ -229,11 +226,15 @@
             <linkerLibLibItem>caclentry</linkerLibLibItem>
             <linkerLibLibItem>caclmdl</linkerLibLibItem>
             <linkerLibLibItem>v5spbm</linkerLibLibItem>
-            <linkerLibFileItem>../VEGA_Library/NETBEANS/DMenu/Ver0005/Lib/V5S_LibDMenu.a</linkerLibFileItem>
             <linkerLibLibItem>v3_libepadso</linkerLibLibItem>
             <linkerLibLibItem>caqrcode</linkerLibLibItem>
             <linkerLibFileItem>aes.o</linkerLibFileItem>
             <linkerLibFileItem>DESFire.o</linkerLibFileItem>
+            <linkerLibFileItem>../VEGA_Library/NETBEANS/DMenu/Ver0006/Lib/V5S_LibDMenu.a</linkerLibFileItem>
+            <linkerLibLibItem>v5sinput</linkerLibLibItem>
+            <linkerLibLibItem>cabarcode</linkerLibLibItem>
+            <linkerLibLibItem>cabarcodescan</linkerLibLibItem>
+            <linkerLibLibItem>v5scfgexpress</linkerLibLibItem>
           </linkerLibItems>
           <commandLine>-L . "-L${SDKV5SLIB}" "-L${SDKV5SLIBN}"</commandLine>
         </linkerTool>

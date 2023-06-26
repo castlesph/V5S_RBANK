@@ -189,6 +189,7 @@ Func_vdFunc stFunctionList_vdFunc[] = {
 	
 	{"inLogout", inLogout},
 	{"inCTOS_SetupMenu", inCTOS_SetupMenu},
+        {"Password", inCTOS_SetupPw},
 	{"inCTOS_ReportMenu", inCTOS_ReportMenu},
 	{"inCTOS_CashIn", inCTOS_CashIn},
 	{"inCTOS_CashOut", inCTOS_CashOut},

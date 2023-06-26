@@ -4743,6 +4743,25 @@ vdDebug_LogPrintf("JEFF::inBDOManualSettle Host Idx = [%d]", strHDT.inHostIndex)
 /* BDO: Manual settlement prompt after failed settlement - end -- jzg */
 
 
+int get_env(char *tag, char *value, int len)
+{
+	int inRet = 0;
+	inRet = inCTOSS_GetEnvDB (tag, value);
+
+	vdDebug_LogPrintf("get_env tag[%s] value[%s] Ret[%d]", tag, value, inRet);
+	return inRet;
+}
+
+int put_env(char *tag, char *value, int len)
+{
+	int inRet = 0;
+	
+	inRet = inCTOSS_PutEnvDB (tag, value);
+
+	vdDebug_LogPrintf("put_env tag[%s] value[%s] Ret[%d]", tag, value, inRet);
+	return inRet;
+}
+
 //hubing enhance ECR
 int get_env_int (char *tag)
 {

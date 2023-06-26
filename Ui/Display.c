@@ -1709,6 +1709,7 @@ int inCheckBatteryStatus(void)
 
 int inCheckBattery(void)
 {
+    return 0;
 }
 #if 0
 int inCheckTMSBackUpFilesExists()
@@ -2212,7 +2213,77 @@ int vdCTOS_EditBiller(void)
 
 int vdCTOS_EditUser(void)
 {
-    
+    int inNumRecs = 0, ret;
+    BYTE strOut[30],strtemp[64] = {0};
+    USHORT usLen;
+    int line = 2;
+    int i;
+    inNumRecs=inUSRNumRecord();
+    vdDebug_LogPrintf("inNumRecs: %d", inNumRecs);
+    inDatabase_TerminalOpenDatabase();
+    memset(strMultiUSR, 0, sizeof(strMultiUSR));
+    inUSRReadEx(1);
+    inDatabase_TerminalCloseDatabase();
+    while(1)
+    {
+        CTOS_LCDTClearDisplay();
+        vdDispTitleString("EDIT USER");
+	for (i=0; i < inNumRecs; i++)
+	{
+		if (strMultiUSR[i].szUserName[0] != 0)
+		{
+                    sprintf(strtemp, "%d %s", i+1, strMultiUSR[i].szUserName);
+                    setLCDPrint(line++, DISPLAY_POSITION_LEFT, strtemp);
+		}
+	}       
+        
+        //select User
+        ret = InputString(1, 8, 0x00, 0x02, strOut, &usLen, 0, d_INPUT_TIMEOUT);
+        
+        if(ret==d_KBD_ENTER)
+    	{
+    		if (strOut[0]==0x30 || strOut[0]==0x31 || strOut[0]==0x32)
+    		{
+                    	if(strOut[0] == 0x32)
+    			{
+    				;
+    			}
+    			if(strOut[0] == 0x31)
+    			{
+    				;
+    			}
+    			if(strOut[0] == 0x30)
+    			{
+    				;
+    			}
+    			break;
+    		}
+    		else
+    		{
+                    vduiClearBelow(2);
+                    vduiWarningSound();
+                    vduiDisplayStringCenter(7,"PLEASE SELECT");
+                    vduiDisplayStringCenter(8,"A VALID VALUE");
+                    CTOS_Delay(2000);		
+    		}
+    	}
+    	if(ret == d_KBD_CANCEL || ret == 0xFF)
+    		break;
+        //Edit user
+        strcpy(strtemp,"New:") ;
+        CTOS_LCDTPrintXY(1, 7, strtemp);
+        memset(strOut,0x00, sizeof(strOut));
+        usLen = 32;
+        ret= InputStringAlpha(1, 8, 0x00, 0x02, strOut, &usLen, 1, d_INPUT_TIMEOUT);
+        if(ret==d_KBD_ENTER)
+        {
+
+            break;
+        }   
+        if(ret == d_KBD_CANCEL)
+            break;
+    }
+    return 0;
 }
 
 BYTE MenuTransType(BYTE *szTrxnMenu)

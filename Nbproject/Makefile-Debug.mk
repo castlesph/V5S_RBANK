@@ -114,19 +114,17 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-lcafont -lcafs -lcakms -lcalcd -lcamodem -lcapmodem -lcaprt -lcartc -lcauart -lcauldpm -lcausbh -lcagsm -lcabarcode -lpthread -ldl -lcaclvw -lcatls -lctosapi -lz -lssl -lcrypto -lcurl -lfreetype -lxml2 -lcaethernet -lv5smultiap -lv5sinput -lv5scfgexpress -lcasqlite -lcaxml -lv5sISOEnginee -lv5sEFT -lv5sEFTNAC -lbluetooth ../VEGA_Library/NETBEANS/DMenu/Ver0003/Lib/V5S_LibDMenu.a -lcaclentry -lcaclmdl -lbluetooth -lbmp -lcaclentry -lcaclmdl -lv5spbm ../VEGA_Library/NETBEANS/DMenu/Ver0005/Lib/V5S_LibDMenu.a -lv3_libepadso -lcaqrcode aes.o DESFire.o
+LDLIBSOPTIONS=-lcafont -lcafs -lcakms -lcalcd -lcamodem -lcapmodem -lcaprt -lcartc -lcauart -lcauldpm -lcausbh -lcagsm -lcabarcode -lpthread -ldl -lcaclvw -lcatls -lctosapi -lz -lssl -lcrypto -lcurl -lfreetype -lxml2 -lcaethernet -lv5smultiap -lcasqlite -lcaxml -lv5sISOEnginee -lv5sEFT -lv5sEFTNAC -lbluetooth -lcaclentry -lcaclmdl -lbluetooth -lbmp -lcaclentry -lcaclmdl -lv5spbm -lv3_libepadso -lcaqrcode aes.o DESFire.o ../VEGA_Library/NETBEANS/DMenu/Ver0006/Lib/V5S_LibDMenu.a -lv5sinput -lcabarcode -lcabarcodescan -lv5scfgexpress
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk dist/V5S/RBANK/10V5S_App/V5S_RBANK.exe
 
-dist/V5S/RBANK/10V5S_App/V5S_RBANK.exe: ../VEGA_Library/NETBEANS/DMenu/Ver0003/Lib/V5S_LibDMenu.a
-
-dist/V5S/RBANK/10V5S_App/V5S_RBANK.exe: ../VEGA_Library/NETBEANS/DMenu/Ver0005/Lib/V5S_LibDMenu.a
-
 dist/V5S/RBANK/10V5S_App/V5S_RBANK.exe: aes.o
 
 dist/V5S/RBANK/10V5S_App/V5S_RBANK.exe: DESFire.o
+
+dist/V5S/RBANK/10V5S_App/V5S_RBANK.exe: ../VEGA_Library/NETBEANS/DMenu/Ver0006/Lib/V5S_LibDMenu.a
 
 dist/V5S/RBANK/10V5S_App/V5S_RBANK.exe: ${OBJECTFILES}
 	${MKDIR} -p dist/V5S/RBANK/10V5S_App

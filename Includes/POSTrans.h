@@ -226,6 +226,7 @@ void vdSetECRResponse(char* szECRResponse);
 void vdCTOS_ECRSettings(void);
 
 int inCTOS_SetupMenu(void);
+int inCTOS_SetupPw(void);
 int inCTOS_ReportMenu(void);
 
 int inDeleteUser(void);

@@ -5294,7 +5294,7 @@ vdDebug_LogPrintf("Bret[%d]	 szOutput [%s]",Bret, szOutput);
      if(FAIL == shRsesult)
           shCount ++ ;
      }
-
+vdDebug_LogPrintf("shRsesult=%d ",shRsesult);
      return shRsesult;
 
 }
@@ -12109,6 +12109,20 @@ int inCTOS_SetupMenu(void)
     strcpy(trxlogo, "allcards.bmp");
     vdDebug_LogPrintf("trxlogo [%s], inSaleType [%d]", trxlogo, inSaleType);
     vdDisplayTrxn(inSaleType, trxlogo);
+			
+	return d_OK;
+}
+
+int inCTOS_SetupPw(void)
+{
+    int inRet, inSaleType=0;
+    char trxlogo[20+1];
+	
+    srTransRec.byTransType = SETUP;
+    inRet = inCTOS_GetTxnPassword();
+    vdDebug_LogPrintf("inCTOS_SetupPw::inRet=[%d]", inRet);
+    if (d_OK != inRet)
+        return inRet;
 			
 	return d_OK;
 }
