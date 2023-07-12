@@ -4098,7 +4098,7 @@ int inSelectTelcoSetting()
 	int i = 0;
 
 	//----------------------------
-	BYTE	szAPN[30] = {0};
+	BYTE	szAPN[50] = {0};
 	BYTE	szUserName[30] = {0};
 	BYTE	szPassword[30] = {0};
 	BYTE	szPriTxnHostIP[30] = {0};
@@ -4956,7 +4956,7 @@ void vdCTOS_PrintISOMode(void)
 //aaronnino for remote download setup 10 of 12 start
 void vdCTOS_TMSSetting(void)
 {
-	BYTE strOut[30],strtemp[17];
+	BYTE strOut[50],strtemp[17];
 	BYTE szInputBuf[5];
     int inResult;
     int ret;

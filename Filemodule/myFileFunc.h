@@ -554,7 +554,7 @@ typedef struct
     BYTE	szHostDNS1[30] ;
     BYTE	szHostDNS2[30] ;
     BOOL	fDHCPEnable ;
-    BYTE	szAPN[30] ;
+    BYTE	szAPN[50] ;
     BYTE	szUserName[30] ;
     BYTE	szPassword[30] ;
 	BYTE	szWifiSSID[100] ;

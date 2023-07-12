@@ -4,7 +4,7 @@ typedef struct
 {
 	UINT 	GPTid;
 	BYTE	szGPTName[30] ;
-	BYTE	szGPTAPN[30] ;
+	BYTE	szGPTAPN[50] ;
 	BYTE	szGPTUserName[30] ;
 	BYTE	szGPTPassword[30] ;
 	BYTE	szGPTPriTxnHostIP[30];

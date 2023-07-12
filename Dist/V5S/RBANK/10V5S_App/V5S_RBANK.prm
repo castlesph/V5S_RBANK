@@ -16,12 +16,13 @@ V5S_NETS
 0=TERMINAL\TCP\szSubNetMask=255.255.255.0;Terminal Subnet Mask
 0=TERMINAL\TCP\szHostDNS1=0.0.vdCTOS_FunctionKey.0;Primary DNS
 0=TERMINAL\TCP\szHostDNS2=0.0.0.0;Secondary DNSs
+0=TERMINAL\TCP\szAPN=robinsonsbank-static.globe.com.ph;APN
 0=TERMINAL\TCT\byTerminalType=3;1 for V5S Text Menu, 2 for V5S ICON MENU, 3 for V3 Text Menu, 4 for V3 ICON Menu, 5 for MP200 Text Menu, 6 for MP200 ICON MENU, 7 for UPT1000 Text Menu, 8 for UPT1000 ICON MENU, 9 Text Menu V3UL, 10 for V3UL ICON MENU
 0=TERMINAL\TCT\byRS232DebugPort=8;Debug
 0=TERMINAL\TCT\inMenuid=1;menu id
 0=TERMINAL\TCT\fPrintISOMessage=0;Print ISO
 0=TERMINAL\TCT\inPrintISOOption=0;1 Print raw ISO, 2 print parsed iso, 3 print both
-0=ENV\CFG\szValue\szTag\BANCNET_TESTKEY=1;Hardcode TMK for Debit
+0=ENV\CFG\szValue\szTag\BANCNET_TESTKEY=0;Hardcode TMK for Debit
 0=ENV\CFG\szValue\szTag\V5S_RBDEBIT_CRC=0001;RDebit app CRC
 0=ENV\CFG\szValue\szTag\V5S_RBANK_CRC=0001;RCredit app CRC
 
